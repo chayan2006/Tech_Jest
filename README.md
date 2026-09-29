@@ -2,6 +2,12 @@
 
 Marketing and lead-generation website for TechJest.
 
+## Project structure
+
+- `frontend/` — reusable UI components and frontend ownership notes.
+- `backend/` — Supabase clients and backend ownership notes.
+- `src/app/` — Next.js App Router pages and API route handlers. This remains here because it is required by Next.js.
+
 ## Run locally
 
 Requires Node.js 20+ and npm (or pnpm). Then:

@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/backend/supabase/client";
 
 type Mode = "login" | "signup";
 

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogoModel } from "@/components/logo-model";
+import { LogoModel } from "@/frontend/components/logo-model";
 import Image from "next/image";
 
 const services = [

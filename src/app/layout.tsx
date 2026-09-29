@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import "./globals.css";
-import { MobileMenu } from "@/components/mobile-menu";
-import { ProfileBadge } from "@/components/profile-badge";
-import { createClient } from "@/lib/supabase/server";
+import { MobileMenu } from "@/frontend/components/mobile-menu";
+import { ProfileBadge } from "@/frontend/components/profile-badge";
+import { createClient } from "@/backend/supabase/server";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),

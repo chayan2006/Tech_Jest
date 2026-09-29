@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/backend/supabase/server";
 
 export default async function Dashboard() {
   const supabase = await createClient();
