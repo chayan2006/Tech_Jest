@@ -1,10 +1,13 @@
 node_modules
 .next
 out
+.vercel
+.DS_Store
 .env
 .env.local
 .env.*.local
 !.env.example
+*.tsbuildinfo
 coverage
 playwright-report
 test-results

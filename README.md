@@ -12,6 +12,21 @@ Marketing and lead-generation website for TechJest.
 
 Set `NEXT_PUBLIC_SITE_URL` to the real public domain in production. TechJest generates canonical metadata, Open Graph/Twitter cards, founder and organization JSON-LD, `robots.txt`, and `sitemap.xml` from that value. The founders are represented as Chayan Khatua and Amit Singh Panwar.
 
+## Production CI/CD
+
+Every pull request and every push to `main` runs GitHub Actions from [`.github/workflows/ci.yml`](./.github/workflows/ci.yml). It installs the locked dependencies with `npm ci`, then runs `npm run check` (typecheck plus production build).
+
+For continuous deployment, import this repository into Vercel and enable the Git integration. Vercel will create preview deployments for pull requests and deploy `main` to production after the CI check passes. Configure these production environment variables in Vercel:
+
+- `NEXT_PUBLIC_SITE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_JWKS_URL`
+- `CONTACT_EMAIL`
+- `WHATSAPP_NUMBER`
+
+Never add `SUPABASE_SECRET_KEY` to client or Vercel environment variables for this application.
+
 ## Run locally
 
 Requires Node.js 20+ and npm (or pnpm). Then:
