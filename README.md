@@ -5,7 +5,7 @@ Marketing and lead-generation website for TechJest.
 ## Project structure
 
 - `frontend/` — reusable UI components and frontend ownership notes.
-- `backend/` — Supabase clients and backend ownership notes.
+- `backend/` — Supabase clients, database schema, and backend ownership notes.
 - `src/app/` — Next.js App Router pages and API route handlers. This remains here because it is required by Next.js.
 
 ## SEO
@@ -43,7 +43,7 @@ Open `http://localhost:3000`.
 Authentication uses Supabase Auth and project history uses a protected PostgreSQL table.
 
 1. Create a Supabase project.
-2. In Supabase SQL Editor, run [`supabase/schema.sql`](./supabase/schema.sql). If you already ran an older version, run the updated file again; it is safe to rerun and adds profiles, signup metadata, and the budget column.
+2. In Supabase SQL Editor, run [`backend/supabase/schema.sql`](./backend/supabase/schema.sql). If you already ran an older version, run the updated file again; it is safe to rerun and adds profiles, signup metadata, and the budget column.
 3. Copy the project URL and anon key into `.env.local`:
 
 ```env
