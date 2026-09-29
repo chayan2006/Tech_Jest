@@ -9,7 +9,7 @@ import { createClient } from "@/backend/supabase/server";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: { default: "TechJest | Software Development Company for Growing Businesses", template: "%s | TechJest" },
-  description: "TechJest is a software development company founded by Chayan Khatua and Amit Singh Panwar. We build websites, web apps, mobile apps, AI solutions, and reliable cloud systems.",
+  description: "TechJest is a software development company founded by Chayan Khatua and Amit Singh Panwar. We build websites, web apps, mobile apps, AI solutions, cloud systems, and digital experiences for startups and growing businesses.",
   keywords: ["TechJest", "software development company", "web development", "mobile app development", "AI ML solutions", "cloud DevOps", "UI UX design", "IT consulting"],
   authors: [
     { name: "Chayan Khatua", url: "https://github.com/chayan2006" },
@@ -53,14 +53,23 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     url: siteUrl,
     logo: `${siteUrl}/images/techjest-brand.png`,
     email: "techjest1@gmail.com",
-    description: "Software development company for startups and growing teams.",
+    description: "TechJest is a software development company that builds websites, web applications, mobile apps, AI/ML solutions, cloud infrastructure, and user-focused digital products for startups and growing businesses.",
     founder: [
-      { "@type": "Person", name: "Chayan Khatua", url: "https://github.com/chayan2006" },
-      { "@type": "Person", name: "Amit Singh Panwar" },
+      { "@type": "Person", "@id": `${siteUrl}/about#chayan-khatua`, name: "Chayan Khatua", url: "https://github.com/chayan2006" },
+      { "@type": "Person", "@id": `${siteUrl}/about#amit-singh-panwar`, name: "Amit Singh Panwar" },
     ],
     sameAs: ["https://github.com/chayan2006/Tech_Jest"],
     areaServed: "Worldwide",
-    knowsAbout: ["Web development", "Mobile app development", "Artificial intelligence", "Cloud computing", "UI/UX design", "IT consulting"],
+    knowsAbout: ["Web development", "Mobile app development", "Artificial intelligence", "Machine learning", "Cloud computing", "DevOps", "UI/UX design", "IT consulting"],
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "TechJest software development services",
+      itemListElement: ["Web development", "Mobile app development", "AI / ML solutions", "Cloud & DevOps", "UI / UX design", "IT consulting & support"].map((name, index) => ({
+        "@type": "Offer",
+        position: index + 1,
+        itemOffered: { "@type": "Service", name, provider: { "@id": `${siteUrl}/#organization` } },
+      })),
+    },
   };
   const websiteSchema = {
     "@context": "https://schema.org",
@@ -68,6 +77,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     name: "TechJest",
     url: siteUrl,
     publisher: { "@id": `${siteUrl}/#organization` },
+    inLanguage: "en-IN",
+    description: "Official website of TechJest, a software development company founded by Chayan Khatua and Amit Singh Panwar.",
   };
   return <html lang="en"><body>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
