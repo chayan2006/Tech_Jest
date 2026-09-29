@@ -1,0 +1,29 @@
+<svg width="1600" height="1000" viewBox="0 0 1600 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="1000" fill="#F8FAFC"/>
+  <defs>
+    <linearGradient id="wash" x1="160" y1="0" x2="1450" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.5" stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#EEF2F6"/>
+    </linearGradient>
+    <radialGradient id="halo" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(1240 180) rotate(120) scale(420 600)">
+      <stop stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="64" height="64" patternUnits="userSpaceOnUse">
+      <path d="M64 0H0V64" stroke="#CBD5E1" stroke-opacity="0.28"/>
+    </pattern>
+    <filter id="blur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="28"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1000" fill="url(#wash)"/>
+  <rect width="1600" height="1000" fill="url(#grid)"/>
+  <ellipse cx="1280" cy="160" rx="370" ry="250" fill="url(#halo)"/>
+  <ellipse cx="170" cy="890" rx="320" ry="160" fill="#FFFFFF" fill-opacity="0.9" filter="url(#blur)"/>
+  <path d="M-80 710C240 580 410 620 670 470C920 325 1110 360 1680 85" stroke="#FFFFFF" stroke-width="160" stroke-opacity="0.72" filter="url(#blur)"/>
+  <path d="M-50 760C300 625 430 665 690 515C955 360 1150 400 1660 130" stroke="#DCE3EA" stroke-width="1.5" stroke-opacity="0.8"/>
+  <circle cx="1300" cy="190" r="92" stroke="#FFFFFF" stroke-width="1.5" stroke-opacity="0.9"/>
+  <circle cx="1300" cy="190" r="132" stroke="#D7DEE6" stroke-width="1" stroke-opacity="0.6"/>
+  <circle cx="1300" cy="190" r="5" fill="#98A2B3"/>
+</svg>

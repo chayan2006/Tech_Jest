@@ -1,0 +1,50 @@
+# TechJest
+
+Marketing and lead-generation website for TechJest.
+
+## Run locally
+
+Requires Node.js 20+ and npm (or pnpm). Then:
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`.
+
+## Client accounts and project history
+
+Authentication uses Supabase Auth and project history uses a protected PostgreSQL table.
+
+1. Create a Supabase project.
+2. In Supabase SQL Editor, run [`supabase/schema.sql`](./supabase/schema.sql). If you already ran an older version, run the updated file again; it is safe to rerun and adds profiles, signup metadata, and the budget column.
+3. Copy the project URL and anon key into `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+SUPABASE_JWKS_URL=https://your-project.supabase.co/auth/v1/.well-known/jwks.json
+```
+
+Never put `SUPABASE_SECRET_KEY` in client-exposed variables or commit it to the repository. The current app uses Supabase Auth and Row Level Security with the publishable key; it does not need the secret key.
+
+4. In Supabase Auth settings, add `http://localhost:3000/auth/callback` and your production URL followed by `/auth/callback` as redirect URLs.
+5. To enable Google login, open **Authentication → Providers → Google** in Supabase, enable Google, then add the Google OAuth Client ID and Client Secret from Google Cloud Console. In Google Cloud, add Supabase’s displayed callback URL (usually `https://<project-ref>.supabase.co/auth/v1/callback`) as an authorized redirect URI. The app’s Google button will then send users through `/auth/callback` and into `/dashboard`.
+6. Start the app with `npm run dev`.
+
+Users can register at `/auth`, log in, submit authenticated project requests at `/contact`, and review their private history at `/dashboard`. Row-level security ensures users can only read their own requests.
+
+The schema keeps companies as real relational records: each profile can reference a company, and every project request stores the authenticated user and company relationship. Run the updated SQL file in Supabase SQL Editor after schema changes; it safely backfills existing profile company names.
+
+## Routes
+
+- `/` home
+- `/services` and `/services/[slug]`
+- `/portfolio`
+- `/about`
+- `/contact`
+- `/auth`
+- `/dashboard`
+
+The initial content intentionally labels case studies as samples until real client permission and details are available.
