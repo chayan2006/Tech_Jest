@@ -79,6 +79,8 @@ h3 { font-size:1.1rem; letter-spacing:-.03em; margin-bottom:9px; }
 .band { background:rgba(255,255,255,.72); color:var(--ink); backdrop-filter:blur(16px); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
 .band .lead, .band .eyebrow { color:var(--muted); }
 .process-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line); }
+.leadership-grid { grid-template-columns:repeat(2,1fr); margin-top:28px; }
+.leadership-grid .process-step { min-height:120px; }
 .process-step { background:rgba(255,255,255,.68); padding:25px; min-height:180px; }
 .step-no { font:12px "DM Mono"; color:var(--orange); margin-bottom:35px; }
 .process-step p { color:var(--muted); line-height:1.55; font-size:.88rem; }

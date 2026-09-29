@@ -9,13 +9,13 @@ import { createClient } from "@/backend/supabase/server";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: { default: "TechJest | Software Development Company for Growing Businesses", template: "%s | TechJest" },
-  description: "TechJest is a software development company founded by Chayan Khatua and Amit Singh Panwar. We build websites, web apps, mobile apps, AI solutions, cloud systems, and digital experiences for startups and growing businesses.",
+  description: "TechJest is a software development company led by Founders and CEOs Chayan Khatua and Amit Shing Panwar, with a leadership team building websites, apps, AI, cloud, and digital products.",
   keywords: ["TechJest", "software development company", "web development", "mobile app development", "AI ML solutions", "cloud DevOps", "UI UX design", "IT consulting"],
   authors: [
     { name: "Chayan Khatua", url: "https://github.com/chayan2006" },
-    { name: "Amit Singh Panwar" },
+    { name: "Amit Shing Panwar" },
   ],
-  creator: "Chayan Khatua and Amit Singh Panwar",
+  creator: "Chayan Khatua and Amit Shing Panwar",
   publisher: "TechJest",
   alternates: { canonical: "/" },
   openGraph: {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     locale: "en_IN",
     siteName: "TechJest",
     title: "TechJest | Software Development Company for Growing Businesses",
-    description: "Practical software engineering for startups and growing teams, founded by Chayan Khatua and Amit Singh Panwar.",
+    description: "Practical software engineering for startups and growing teams, led by Founders and CEOs Chayan Khatua and Amit Shing Panwar.",
     images: [{ url: "/images/techjest-brand.png", width: 138, height: 92, alt: "TechJest logo" }],
   },
   twitter: {
@@ -56,7 +56,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     description: "TechJest is a software development company that builds websites, web applications, mobile apps, AI/ML solutions, cloud infrastructure, and user-focused digital products for startups and growing businesses.",
     founder: [
       { "@type": "Person", "@id": `${siteUrl}/about#chayan-khatua`, name: "Chayan Khatua", url: "https://github.com/chayan2006" },
-      { "@type": "Person", "@id": `${siteUrl}/about#amit-singh-panwar`, name: "Amit Singh Panwar" },
+      { "@type": "Person", "@id": `${siteUrl}/about#amit-shing-panwar`, name: "Amit Shing Panwar" },
+    ],
+    employee: [
+      { "@type": "Person", "@id": `${siteUrl}/about#chayan-khatua`, name: "Chayan Khatua", jobTitle: "Founder / CEO" },
+      { "@type": "Person", "@id": `${siteUrl}/about#amit-shing-panwar`, name: "Amit Shing Panwar", jobTitle: "Founder / CEO" },
+      { "@type": "Person", "@id": `${siteUrl}/about#arushi-choudhary`, name: "Arushi Choudhary", jobTitle: "CTO" },
+      { "@type": "Person", "@id": `${siteUrl}/about#sindhant-dadwal`, name: "Sindhant Dadwal", jobTitle: "CFO" },
+      { "@type": "Person", "@id": `${siteUrl}/about#nishtha-banerjee`, name: "Nishtha Banerjee", jobTitle: "CPO" },
+      { "@type": "Person", "@id": `${siteUrl}/about#nayan-roy`, name: "Nayan Roy", jobTitle: "CMO" },
     ],
     sameAs: ["https://github.com/chayan2006/Tech_Jest"],
     areaServed: "Worldwide",
@@ -78,7 +86,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     url: siteUrl,
     publisher: { "@id": `${siteUrl}/#organization` },
     inLanguage: "en-IN",
-    description: "Official website of TechJest, a software development company founded by Chayan Khatua and Amit Singh Panwar.",
+    description: "Official website of TechJest, led by Founders and CEOs Chayan Khatua and Amit Shing Panwar.",
   };
   return <html lang="en"><body>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />

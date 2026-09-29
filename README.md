@@ -10,7 +10,7 @@ Marketing and lead-generation website for TechJest.
 
 ## SEO
 
-Set `NEXT_PUBLIC_SITE_URL` to the real public domain in production. TechJest generates canonical metadata, Open Graph/Twitter cards, founder and organization JSON-LD, `robots.txt`, and `sitemap.xml` from that value. The founders are represented as Chayan Khatua and Amit Singh Panwar.
+Set `NEXT_PUBLIC_SITE_URL` to the real public domain in production. TechJest generates canonical metadata, Open Graph/Twitter cards, leadership and organization JSON-LD, `robots.txt`, and `sitemap.xml` from that value. The leadership team is represented as Chayan Khatua (Founder / CEO), Amit Shing Panwar (Founder / CEO), Arushi Choudhary (CTO), Sindhant Dadwal (CFO), Nishtha Banerjee (CPO), and Nayan Roy (CMO).
 
 ## Production CI/CD
 
