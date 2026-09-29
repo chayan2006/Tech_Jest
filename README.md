@@ -8,6 +8,10 @@ Marketing and lead-generation website for TechJest.
 - `backend/` — Supabase clients and backend ownership notes.
 - `src/app/` — Next.js App Router pages and API route handlers. This remains here because it is required by Next.js.
 
+## SEO
+
+Set `NEXT_PUBLIC_SITE_URL` to the real public domain in production. TechJest generates canonical metadata, Open Graph/Twitter cards, founder and organization JSON-LD, `robots.txt`, and `sitemap.xml` from that value. The founders are represented as Chayan Khatua and Amit Singh Panwar.
+
 ## Run locally
 
 Requires Node.js 20+ and npm (or pnpm). Then:
