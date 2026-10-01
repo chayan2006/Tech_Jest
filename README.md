@@ -44,6 +44,13 @@ Authentication uses Supabase Auth and project history uses a protected PostgreSQ
 
 1. Create a Supabase project.
 2. In Supabase SQL Editor, run [`backend/supabase/schema.sql`](./backend/supabase/schema.sql). If you already ran an older version, run the updated file again; it is safe to rerun and adds profiles, signup metadata, and the budget column.
+
+### Admin access
+
+Open `/admin/login` and sign in with the administrator account created in Supabase
+Authentication. In Supabase, set that user's **User Metadata → app_metadata** role
+to `admin` using the server-side user management tools or the Supabase dashboard.
+The admin requests page will reject accounts without this role.
 3. Copy the project URL and anon key into `.env.local`:
 
 ```env

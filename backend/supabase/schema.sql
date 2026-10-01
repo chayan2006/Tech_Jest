@@ -129,6 +129,12 @@ create policy "Users can read their own project requests"
   on public.project_requests for select
   using (auth.uid() = user_id);
 
+drop policy if exists "Admins can read all project requests" on public.project_requests;
+create policy "Admins can read all project requests"
+  on public.project_requests for select
+  to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
 drop policy if exists "Users can create their own project requests" on public.project_requests;
 create policy "Users can create their own project requests"
   on public.project_requests for insert
@@ -139,3 +145,9 @@ create policy "Users can create their own project requests"
       where profiles.id = auth.uid() and profiles.company_id = project_requests.company_id
     ))
   );
+
+drop policy if exists "Admins can read all profiles" on public.profiles;
+create policy "Admins can read all profiles"
+  on public.profiles for select
+  to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');

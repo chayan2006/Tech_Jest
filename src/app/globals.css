@@ -145,6 +145,16 @@ h3 { font-size:1.1rem; letter-spacing:-.03em; margin-bottom:9px; }
 .history-item { display:flex; justify-content:space-between; gap:24px; padding:24px; border:1px solid var(--line); border-radius:12px; background:var(--glass); backdrop-filter:blur(14px); }
 .history-item p { color:var(--muted); line-height:1.6; margin:0; }
 .history-item time { color:var(--muted); font-size:.8rem; white-space:nowrap; }
+.admin-page { max-width:1000px; }
+.admin-head { display:flex; justify-content:space-between; gap:20px; padding:18px 0; margin:32px 0 18px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); color:var(--muted); font-size:.82rem; }
+.admin-requests { display:grid; gap:14px; }
+.admin-request { padding:24px; border:1px solid var(--line); border-radius:12px; background:var(--glass); backdrop-filter:blur(14px); }
+.admin-request-top { display:flex; justify-content:space-between; gap:20px; }
+.admin-request h2 { font-size:1.55rem; margin:8px 0 14px; }
+.admin-request time { color:var(--muted); font-size:.8rem; white-space:nowrap; }
+.admin-message { color:var(--muted); line-height:1.65; white-space:pre-wrap; }
+.admin-customer { display:flex; flex-wrap:wrap; gap:8px 18px; padding-top:16px; margin-top:18px; border-top:1px solid var(--line); font-size:.82rem; }
+.admin-customer span { color:var(--muted); }
 .empty-state { padding:42px; border:1px dashed #98a2b3; border-radius:12px; background:var(--glass); }
 .contact-side p { color:var(--muted); line-height:1.7; font-size:.9rem; }
 .side-block { border-top:1px solid var(--line); padding:20px 0; }
