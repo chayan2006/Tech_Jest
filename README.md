@@ -50,7 +50,11 @@ Authentication uses Supabase Auth and project history uses a protected PostgreSQ
 Open `/admin/login` and sign in with the administrator account created in Supabase
 Authentication. In Supabase, set that user's **User Metadata → app_metadata** role
 to `admin` using the server-side user management tools or the Supabase dashboard.
-The admin requests page will reject accounts without this role.
+The admin console at `/admin` includes an overview, request management with status
+updates, a people directory, and an audit trail for sign-ins and account events.
+The audit trail requires the `audit_logs` table and policies from the latest
+`backend/supabase/schema.sql`; rerun that file in Supabase SQL Editor after
+pulling schema changes. The admin pages reject accounts without the `admin` role.
 3. Copy the project URL and anon key into `.env.local`:
 
 ```env

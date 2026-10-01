@@ -151,3 +151,29 @@ create policy "Admins can read all profiles"
   on public.profiles for select
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+create table if not exists public.audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  event text not null check (event in ('login', 'admin_login', 'signup')),
+  email text,
+  ip_address text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists audit_logs_created_idx on public.audit_logs (created_at desc);
+alter table public.audit_logs enable row level security;
+drop policy if exists "Users can record their own audit events" on public.audit_logs;
+create policy "Users can record their own audit events"
+  on public.audit_logs for insert to authenticated
+  with check (auth.uid() = user_id);
+drop policy if exists "Admins can read audit events" on public.audit_logs;
+create policy "Admins can read audit events"
+  on public.audit_logs for select to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+drop policy if exists "Admins can update project requests" on public.project_requests;
+create policy "Admins can update project requests"
+  on public.project_requests for update to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');

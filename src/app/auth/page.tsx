@@ -41,6 +41,11 @@ export default function AuthPage() {
       setMode("login");
       return;
     }
+    if (mode === "login" && result.data.user) {
+      await supabase.from("audit_logs").insert({ user_id: result.data.user.id, event: "login", email: result.data.user.email });
+    } else if (mode === "signup" && result.data.user) {
+      await supabase.from("audit_logs").insert({ user_id: result.data.user.id, event: "signup", email: result.data.user.email });
+    }
     window.location.assign("/dashboard");
   }
 

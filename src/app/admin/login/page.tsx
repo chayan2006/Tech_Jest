@@ -23,10 +23,11 @@ export default function AdminLoginPage() {
       return;
     }
 
-    window.location.assign("/admin/requests");
+    await supabase.from("audit_logs").insert({ user_id: result.data.user.id, event: "admin_login", email: result.data.user.email });
+    window.location.assign("/admin");
   }
 
-  return <section className="page-hero"><div className="container auth-shell">
+  return <section className="page-hero"><div className="container auth-shell admin-login-page">
     <div className="eyebrow">Restricted access</div>
     <h1>Admin login.</h1>
     <p className="lead">Sign in with an authorized TechJest administrator account.</p>

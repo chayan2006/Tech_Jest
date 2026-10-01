@@ -44,7 +44,6 @@ export function LogoModel() {
           alt=""
           width={1152}
           height={768}
-          priority
           sizes="(max-width: 800px) 90vw, 540px"
         />
       </div>

@@ -1,5 +1,17 @@
-import { redirect } from "next/navigation";
+import Link from "next/link";
+import { requireAdmin } from "@/backend/supabase/admin";
+import { AdminShell } from "@/frontend/components/admin-shell";
 
-export default function AdminPage() {
-  redirect("/admin/requests");
+export default async function AdminPage() {
+  const { supabase, user } = await requireAdmin();
+  const [{ count: requestCount }, { count: userCount }, { count: activeCount }, { data: recentRequests }] = await Promise.all([
+    supabase.from("project_requests").select("id", { count: "exact", head: true }),
+    supabase.from("profiles").select("id", { count: "exact", head: true }),
+    supabase.from("audit_logs").select("id", { count: "exact", head: true }).gte("created_at", new Date(Date.now() - 30 * 86400000).toISOString()),
+    supabase.from("project_requests").select("id, service, status, created_at").order("created_at", { ascending: false }).limit(5),
+  ]);
+  return <AdminShell email={user.email}><div className="admin-title"><div><div className="eyebrow">Command centre</div><h1>Good morning, admin.</h1><p className="lead">A live view of what is happening across TechJest.</p></div><Link className="btn btn-primary" href="/admin/requests">Review requests</Link></div>
+    <div className="admin-stat-grid"><Link href="/admin/requests" className="admin-stat"><span>Total requests</span><strong>{requestCount ?? 0}</strong><small>All consultation enquiries</small></Link><Link href="/admin/users" className="admin-stat"><span>Registered people</span><strong>{userCount ?? 0}</strong><small>Profiles created on TechJest</small></Link><Link href="/admin/activity" className="admin-stat"><span>Activity, 30 days</span><strong>{activeCount ?? 0}</strong><small>Recorded sign-ins and events</small></Link></div>
+    <div className="admin-panel"><div className="admin-panel-head"><div><h2>Latest requests</h2><p>Stay on top of new opportunities.</p></div><Link href="/admin/requests">View all</Link></div>{recentRequests?.length ? <div className="admin-mini-list">{recentRequests.map(request => <Link href="/admin/requests" className="admin-mini-row" key={request.id}><span><strong>{request.service}</strong><small>{new Date(request.created_at).toLocaleString("en-IN")}</small></span><span className={`admin-status status-${request.status}`}>{request.status.replace("_", " ")}</span></Link>)}</div> : <div className="empty-state"><h2>No requests yet.</h2><p>New consultation requests will appear here.</p></div>}</div>
+  </AdminShell>;
 }
