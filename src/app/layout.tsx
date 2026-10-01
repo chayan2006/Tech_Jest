@@ -5,6 +5,7 @@ import "./globals.css";
 import { MobileMenu } from "@/frontend/components/mobile-menu";
 import { ProfileBadge } from "@/frontend/components/profile-badge";
 import { createClient } from "@/backend/supabase/server";
+import { CartLink } from "@/frontend/components/service-cart";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
@@ -120,7 +121,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <header className="site-header"><div className="container nav">
       <div className="nav-left"><Link className="logo" href="/"><Image className="brand-image" src="/images/techjest-brand.png" alt="TechJest" width={138} height={92} priority /></Link>{user && <ProfileBadge email={user.email} name={profileName} avatarUrl={avatarUrl} />}</div>
       <nav className="nav-links" aria-label="Main navigation">{nav.filter(([, href]) => href !== "/auth" || !user).map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
-      <div className="nav-actions"><Link className="btn btn-primary" href="/contact">Book a consultation</Link><MobileMenu /></div>
+      <div className="nav-actions"><CartLink /><Link className="btn btn-primary" href="/contact">Book a consultation</Link><MobileMenu /></div>
     </div></header>
     <main id="main">{children}</main>
     <footer className="footer"><div className="container">

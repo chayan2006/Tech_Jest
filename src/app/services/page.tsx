@@ -1,10 +1,10 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import { ServiceMarketplace } from "@/frontend/components/service-marketplace";
 
 export const metadata: Metadata = {
-  title: "Software Development Services",
-  description: "Explore TechJest services: web development, mobile apps, AI/ML, cloud and DevOps, UI/UX design, and IT consulting.",
+  title: "IT Services Marketplace",
+  description: "Browse TechJest's individual web, AI, e-commerce, mobile, design, automation, and support services. Build a project package and request a quote.",
   alternates: { canonical: "/services" },
 };
-const services = [["Web development","web-development","Marketing sites, web apps, and e-commerce that stay fast and maintainable."],["Mobile app development","mobile-app-development","Cross-platform and native apps designed for real-world adoption."],["AI / ML solutions","ai-ml-solutions","Useful automation, assistants, and forecasting grounded in your data."],["Cloud & DevOps","cloud-devops","Reliable deployments, observability, and infrastructure that scales with you."],["UI / UX design","ui-ux-design","Research-led interfaces that help people understand and act."],["IT consulting & support","it-consulting-support","A practical technical partner for decisions, audits, and upkeep."]];
-export default function Services(){return <><section className="page-hero"><div className="container"><div className="eyebrow">Services</div><h1>Build the right thing, then make it work beautifully.</h1><p className="lead">Choose a focused capability or bring us the messy problem. We’ll help you find the useful path through it.</p></div></section><section className="section"><div className="container"><div className="service-grid">{services.map(([title,slug,desc])=><article className="service-card" key={slug}><h3>{title}</h3><p>{desc}</p><Link className="card-link" href={`/services/${slug}`}>Get a quote</Link></article>)}</div></div></section><section className="section band"><div className="container"><div className="section-head"><div><div className="eyebrow">Ways to work together</div><h2>Engagements that fit the work.</h2></div></div><div className="process-grid"><div className="process-step"><h3>Fixed-price project</h3><p>A defined scope, milestones, and a clear outcome.</p></div><div className="process-step"><h3>Time & materials</h3><p>Flexible support when the problem will evolve as you learn.</p></div><div className="process-step"><h3>Dedicated team</h3><p>Ongoing product and engineering capacity with your goals in view.</p></div><div className="process-step"><h3>Not sure yet?</h3><p>Start with a short call and we’ll help shape the brief.</p></div></div></div></section></>}
+
+export default function Services() { return <ServiceMarketplace />; }

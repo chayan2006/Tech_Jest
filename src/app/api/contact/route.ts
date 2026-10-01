@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const budget = typeof body.budget === "string" ? body.budget.trim() : "";
   if (!service || message.length < 20 || message.length > 5000) return NextResponse.json({ error: "Select a service and provide a message between 20 and 5000 characters." }, { status: 400 });
-  if (service.length > 160 || budget.length > 160) return NextResponse.json({ error: "Some request details are too long." }, { status: 400 });
+  if (service.length > 1000 || budget.length > 160) return NextResponse.json({ error: "Some request details are too long." }, { status: 400 });
   const { data: profile } = await supabase.from("profiles").select("company_id").eq("id", user.id).maybeSingle();
   const { error } = await supabase.from("project_requests").insert({
     user_id: user.id,
