@@ -19,6 +19,17 @@ function getLoginDestination(user: unknown, next: string | null) {
   return role === "admin" && requestedPath === "/dashboard" ? "/admin" : requestedPath;
 }
 
+function friendlyAuthError(message: string) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes("rate limit") || normalized.includes("email rate")) {
+    return "Supabase has temporarily limited confirmation emails. Wait a few minutes, then try again, or use the confirmation email already sent.";
+  }
+  if (normalized.includes("user already registered")) {
+    return "This email already has an account. Switch to Log in instead.";
+  }
+  return message.replace("Invalid login credentials", "Email or password is incorrect.");
+}
+
 export default function AuthPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -53,7 +64,7 @@ export default function AuthPage() {
       });
     setBusy(false);
     if (result.error) {
-      setMessage(result.error.message.replace("Invalid login credentials", "Email or password is incorrect."));
+      setMessage(friendlyAuthError(result.error.message));
       return;
     }
     if (mode === "signup" && !result.data.session) {
