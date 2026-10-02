@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useEffect } from "react";
 import { createClient } from "@/backend/supabase/client";
 
 type Mode = "login" | "signup";
@@ -29,6 +30,12 @@ export default function AuthPage() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
 
+  useEffect(() => {
+    const error = new URLSearchParams(window.location.search).get("error");
+    if (error === "oauth_callback") setMessage("Your sign-in link expired or could not be verified. Please try again.");
+    if (error === "profile_setup") setMessage("Your account was created, but workspace setup failed. Please log in again.");
+  }, []);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -40,13 +47,13 @@ export default function AuthPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           data: { full_name: fullName.trim(), company: company.trim(), phone: phone.trim(), purpose: purpose.trim() },
         },
       });
     setBusy(false);
     if (result.error) {
-      setMessage(result.error.message);
+      setMessage(result.error.message.replace("Invalid login credentials", "Email or password is incorrect."));
       return;
     }
     if (mode === "signup" && !result.data.session) {
@@ -59,7 +66,8 @@ export default function AuthPage() {
     } else if (mode === "signup" && result.data.user) {
       await supabase.from("audit_logs").insert({ user_id: result.data.user.id, event: "signup", email: result.data.user.email });
     }
-    window.location.assign(getLoginDestination(result.data.user ?? {}, new URLSearchParams(window.location.search).get("next")));
+    const next = new URLSearchParams(window.location.search).get("next");
+    window.location.assign(getLoginDestination(result.data.user ?? {}, next));
   }
 
   async function signInWithGoogle() {
