@@ -280,3 +280,28 @@ create policy "Admins can manage projects" on public.projects for all to authent
 drop policy if exists "Users can read their projects" on public.projects;
 create policy "Users can read their projects" on public.projects for select
   using (exists (select 1 from public.project_requests where project_requests.id = projects.request_id and project_requests.user_id = auth.uid()));
+
+create table if not exists public.project_tasks (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 200),
+  description text,
+  status text not null default 'todo' check (status in ('todo', 'in_progress', 'blocked', 'done')),
+  due_date date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists project_tasks_project_idx on public.project_tasks (project_id, created_at asc);
+alter table public.project_tasks enable row level security;
+drop policy if exists "Admins can manage project tasks" on public.project_tasks;
+create policy "Admins can manage project tasks" on public.project_tasks for all to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Users can read their project tasks" on public.project_tasks;
+create policy "Users can read their project tasks" on public.project_tasks for select
+  using (exists (
+    select 1 from public.projects
+    join public.project_requests on project_requests.id = projects.request_id
+    where projects.id = project_tasks.project_id and project_requests.user_id = auth.uid()
+  ));

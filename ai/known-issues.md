@@ -145,3 +145,15 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Possible impact:** The pages will show their unavailable state until the migration is applied.
 - **Status:** Open deployment prerequisite.
 - **Recommended next investigation/fix:** Apply the idempotent schema and test proposal creation using an authorized admin account.
+
+## 13. Project task workflow requires remote schema application
+
+- **Issue:** Project detail and client dashboard task summaries depend on the additive `project_tasks` table.
+- **Severity:** Medium
+- **Evidence:** `backend/supabase/schema.sql` defines task RLS; `/admin/projects/[id]` creates tasks; `/dashboard` reads tasks through authorized projects.
+- **Affected area:** Admin delivery workspace and client dashboard.
+- **Current behavior:** Source-level task creation and read paths are present; remote database availability is not verified.
+- **Expected behavior:** Admins can add tasks and clients can see tasks for their own projects.
+- **Possible impact:** Task sections remain unavailable until the migration is applied.
+- **Status:** Open deployment prerequisite.
+- **Recommended next investigation/fix:** Apply the idempotent schema and test task creation/read access with separate admin and client accounts.
