@@ -173,6 +173,10 @@ create policy "Admins can read all profiles"
   on public.profiles for select
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Admins can delete profiles" on public.profiles;
+create policy "Admins can delete profiles"
+  on public.profiles for delete to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
 create table if not exists public.audit_logs (
   id uuid primary key default gen_random_uuid(),
@@ -416,6 +420,7 @@ create table if not exists public.admin_notifications (
   created_at timestamptz not null default now()
 );
 create index if not exists admin_notifications_inbox_idx on public.admin_notifications (admin_id, read_at, created_at desc);
+create unique index if not exists admin_notifications_request_unique on public.admin_notifications (request_id) where request_id is not null and type = 'service_request';
 alter table public.admin_notifications enable row level security;
 drop policy if exists "Admins can read own notifications" on public.admin_notifications;
 create policy "Admins can read own notifications" on public.admin_notifications for select to authenticated
@@ -424,6 +429,9 @@ drop policy if exists "Admins can update own notifications" on public.admin_noti
 create policy "Admins can update own notifications" on public.admin_notifications for update to authenticated
   using ((admin_id is null or admin_id = auth.uid()) and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
   with check ((admin_id is null or admin_id = auth.uid()) and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Admins can create notifications" on public.admin_notifications;
+create policy "Admins can create notifications" on public.admin_notifications for insert to authenticated
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 drop policy if exists "Users can create service request notifications" on public.admin_notifications;
 create policy "Users can create service request notifications" on public.admin_notifications for insert to authenticated
   with check (
