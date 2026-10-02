@@ -44,7 +44,8 @@ Authentication uses Supabase Auth and project history uses a protected PostgreSQ
 
 1. Create a Supabase project.
 2. In Supabase SQL Editor, run [`backend/supabase/schema.sql`](./backend/supabase/schema.sql). If you already ran an older version, run the updated file again; it is safe to rerun and adds profiles, signup metadata, structured quote fields, and selected-service snapshots.
-   The latest schema also adds an additive `lead_stage` field for the protected admin CRM pipeline, request-linked `proposals` and `projects` tables for commercial and delivery tracking, and `project_tasks` for delivery work.
+   The latest schema also adds an additive `lead_stage` field for the protected admin CRM pipeline, request-linked `proposals` and `projects` tables for commercial and delivery tracking, `project_tasks` for delivery work, private project collaboration metadata, and invoice records.
+   A lightweight `/api/health` endpoint reports whether the required public Supabase configuration is present; it never returns secret values.
 
 ### Admin access
 

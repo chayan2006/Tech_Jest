@@ -157,3 +157,39 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Possible impact:** Task sections remain unavailable until the migration is applied.
 - **Status:** Open deployment prerequisite.
 - **Recommended next investigation/fix:** Apply the idempotent schema and test task creation/read access with separate admin and client accounts.
+
+## 14. Collaboration and finance schema require remote application
+
+- **Issue:** Project messages, document metadata, and invoices depend on additive tables and policies.
+- **Severity:** Medium
+- **Evidence:** `backend/supabase/schema.sql` defines the tables; `/project/[id]` and `/admin/invoices` query them.
+- **Affected area:** Client portal, collaboration, and finance.
+- **Current behavior:** Source routes are implemented, but remote schema/storage/payment configuration is not verified.
+- **Expected behavior:** Authorized users can read their project data; payment state is only changed by trusted server-side integration.
+- **Possible impact:** Portal sections remain empty/unavailable until migration and storage/payment setup are completed.
+- **Status:** Open deployment prerequisite.
+- **Recommended next investigation/fix:** Apply the schema, configure a private storage bucket, and implement/test provider webhooks before enabling live payments.
+
+## 15. AI recommendation endpoint is deterministic until a model provider is configured
+
+- **Issue:** `/api/ai/recommend` currently ranks the static catalog using prompt keyword matches rather than calling a model.
+- **Severity:** Low
+- **Evidence:** `src/app/api/ai/recommend/route.ts`.
+- **Affected area:** AI consultant foundation.
+- **Current behavior:** Authenticated requests receive service-only recommendations with bounded input.
+- **Expected behavior:** A future model integration should remain server-side and validate output against an allowlisted service schema.
+- **Possible impact:** Recommendations are less nuanced than a model-backed consultant.
+- **Status:** Source-level foundation complete; model provider integration not configured.
+- **Recommended next investigation/fix:** Select a provider, add server-only credentials, schema-validate output, and add rate limiting/cost controls.
+
+## 16. Production observability and end-to-end coverage are not configured
+
+- **Issue:** The repository has a safe configuration health check and a global error boundary, but no external error monitoring, alerting, browser end-to-end suite, or remote Supabase smoke-test environment is verified.
+- **Severity:** Medium
+- **Evidence:** `src/app/api/health/route.ts`, `src/app/error.tsx`, and the current package scripts.
+- **Affected area:** Reliability, deployment, and operations.
+- **Current behavior:** Build/type validation runs locally/CI; runtime provider and browser coverage remain limited.
+- **Expected behavior:** Production should have monitoring, alerts, and authenticated smoke tests.
+- **Possible impact:** Runtime regressions or provider outages may be detected late.
+- **Status:** Open operational follow-up; source-level baseline added.
+- **Recommended next investigation/fix:** Configure an approved monitoring provider and Playwright/Vitest suites with test credentials in CI.

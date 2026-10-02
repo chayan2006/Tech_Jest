@@ -305,3 +305,61 @@ create policy "Users can read their project tasks" on public.project_tasks for s
     join public.project_requests on project_requests.id = projects.request_id
     where projects.id = project_tasks.project_id and project_requests.user_id = auth.uid()
   ));
+
+create table if not exists public.project_messages (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  body text not null check (char_length(body) between 1 and 5000),
+  created_at timestamptz not null default now()
+);
+create index if not exists project_messages_project_idx on public.project_messages (project_id, created_at asc);
+alter table public.project_messages enable row level security;
+drop policy if exists "Admins can manage project messages" on public.project_messages;
+create policy "Admins can manage project messages" on public.project_messages for all to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Users can read and send project messages" on public.project_messages;
+create policy "Users can read and send project messages" on public.project_messages for select to authenticated
+  using (exists (select 1 from public.projects join public.project_requests on project_requests.id = projects.request_id where projects.id = project_messages.project_id and project_requests.user_id = auth.uid()));
+create policy "Users can create project messages" on public.project_messages for insert to authenticated
+  with check (auth.uid() = user_id and exists (select 1 from public.projects join public.project_requests on project_requests.id = projects.request_id where projects.id = project_messages.project_id and project_requests.user_id = auth.uid()));
+
+create table if not exists public.project_documents (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 200),
+  storage_path text not null check (char_length(storage_path) between 1 and 500),
+  created_at timestamptz not null default now()
+);
+create index if not exists project_documents_project_idx on public.project_documents (project_id, created_at desc);
+alter table public.project_documents enable row level security;
+drop policy if exists "Admins can manage project documents" on public.project_documents;
+create policy "Admins can manage project documents" on public.project_documents for all to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Users can read project documents" on public.project_documents;
+create policy "Users can read project documents" on public.project_documents for select
+  using (exists (select 1 from public.projects join public.project_requests on project_requests.id = projects.request_id where projects.id = project_documents.project_id and project_requests.user_id = auth.uid()));
+
+create table if not exists public.invoices (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid references public.projects(id) on delete set null,
+  request_id uuid references public.project_requests(id) on delete set null,
+  number text not null unique,
+  amount numeric not null check (amount >= 0),
+  currency text not null default 'INR' check (currency in ('INR', 'USD')),
+  status text not null default 'draft' check (status in ('draft', 'sent', 'paid', 'void')),
+  due_date date,
+  paid_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create index if not exists invoices_project_idx on public.invoices (project_id, created_at desc);
+alter table public.invoices enable row level security;
+drop policy if exists "Admins can manage invoices" on public.invoices;
+create policy "Admins can manage invoices" on public.invoices for all to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Users can read their invoices" on public.invoices;
+create policy "Users can read their invoices" on public.invoices for select
+  using (exists (select 1 from public.project_requests where project_requests.id = invoices.request_id and project_requests.user_id = auth.uid()));

@@ -54,6 +54,8 @@ The purpose is evidenced by `README.md`, page metadata, route content, and the c
 - `frontend/components/admin-lead-stage.tsx`: client-side admin CRM lead-stage update.
 - `frontend/components/admin-proposal-form.tsx`: admin proposal creation form tied to a request.
 - `frontend/components/admin-task-form.tsx`: admin project task creation form.
+- `frontend/components/project-message-form.tsx`: authenticated client project messaging form.
+- `frontend/components/admin-project-form.tsx`: admin project creation form.
 - `frontend/data/services.ts`: static service definitions, categories, popular services, and price formatting.
 
 ## Frontend flow
@@ -79,6 +81,10 @@ Current application routes discovered in `src/app/`:
 - `/admin/proposals`
 - `/admin/projects`
 - `/admin/projects/[id]`
+- `/admin/invoices`
+- `/project/[id]`
+- `/api/ai/recommend`
+- `/api/health`
 - `/admin/users`
 - `/admin/activity`
 - `/api/contact`
@@ -148,6 +154,9 @@ There is no separate email notification route visible in the current source. `CO
 - `proposals`: request-linked title, summary, amount/currency, validity date, and lifecycle status.
 - `projects`: optional request/proposal links, name, delivery status, and target dates.
 - `project_tasks`: project-linked title, description, status, due date, and timestamps.
+- `project_messages`: project-linked authenticated messages with client/admin RLS.
+- `project_documents`: project-linked private document metadata; storage bucket setup is not included.
+- `invoices`: project/request-linked invoice amount, currency, status, and due date.
 
 The `handle_new_user` trigger creates a profile and may create/link a company from signup metadata. The SQL also backfills profiles/companies and adds columns idempotently.
 
@@ -230,6 +239,9 @@ The README recommends importing the repository into Vercel and enabling Git inte
 - Admin CRM pipeline with additive lead stages (`received`, `qualified`, `proposal`, `negotiation`, `won`, `project`) and protected request detail pages.
 - Admin request details can create proposals; protected proposal and project list pages provide the first commercial/delivery workspace.
 - Admin project details can create delivery tasks, and the client dashboard displays authorized projects and their task summaries.
+- Admins can create project delivery records and clients can open a project portal with proposal, task, document, invoice, and message sections.
+- Client project pages display authorized tasks, private document metadata, invoices, and messages; authenticated AI recommendations return service-catalog suggestions only.
+- `/api/health` reports public Supabase configuration presence without exposing values.
 - Supabase schema with profiles, companies, project requests, audit logs, triggers, indexes, and RLS.
 - SEO metadata, JSON-LD, sitemap, robots rules, and Google verification asset.
 - CI typecheck/build gate.
