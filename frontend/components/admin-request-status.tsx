@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/backend/supabase/client";
 
-type Status = "received" | "in_progress" | "completed";
+type Status = "received" | "in_progress" | "completed" | "declined";
 
 export function AdminRequestStatus({ requestId, initialStatus }: { requestId: string; initialStatus: Status }) {
   const [status, setStatus] = useState<Status>(initialStatus);
@@ -22,5 +22,5 @@ export function AdminRequestStatus({ requestId, initialStatus }: { requestId: st
     setSaving(false);
   }
 
-  return <label className="admin-status-control"><span>Status</span><select value={status} onChange={event => update(event.target.value as Status)} disabled={saving}><option value="received">Received</option><option value="in_progress">In progress</option><option value="completed">Completed</option></select>{message && <small role="alert">{message}</small>}</label>;
+  return <label className="admin-status-control"><span>Status</span><select value={status} onChange={event => update(event.target.value as Status)} disabled={saving}><option value="received">Received</option><option value="in_progress">In progress</option><option value="completed">Completed</option><option value="declined">Declined</option></select>{message && <small role="alert">{message}</small>}</label>;
 }

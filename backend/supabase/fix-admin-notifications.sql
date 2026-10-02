@@ -5,7 +5,7 @@ create table if not exists public.admin_notifications (
   title text not null check (char_length(title) between 2 and 200),
   body text not null check (char_length(body) between 1 and 500),
   request_id uuid references public.project_requests(id) on delete cascade,
-  conversation_id uuid references public.conversations(id) on delete cascade,
+  conversation_id uuid,
   read_at timestamptz,
   created_at timestamptz not null default now()
 );

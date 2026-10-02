@@ -139,6 +139,8 @@ alter table public.project_requests add column if not exists lead_stage text not
 alter table public.project_requests add column if not exists updated_at timestamptz not null default now();
 alter table public.project_requests drop constraint if exists project_requests_lead_stage_check;
 alter table public.project_requests add constraint project_requests_lead_stage_check check (lead_stage in ('received', 'qualified', 'proposal', 'negotiation', 'won', 'project'));
+alter table public.project_requests drop constraint if exists project_requests_status_check;
+alter table public.project_requests add constraint project_requests_status_check check (status in ('received', 'in_progress', 'completed', 'declined'));
 create index if not exists project_requests_user_created_idx on public.project_requests (user_id, created_at desc);
 create index if not exists project_requests_company_idx on public.project_requests (company_id);
 
@@ -197,6 +199,10 @@ create policy "Admins can update project requests"
   on public.project_requests for update to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Admins can delete project requests" on public.project_requests;
+create policy "Admins can delete project requests"
+  on public.project_requests for delete to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
 create table if not exists public.project_request_services (
   id uuid primary key default gen_random_uuid(),
@@ -405,7 +411,7 @@ create table if not exists public.admin_notifications (
   title text not null check (char_length(title) between 2 and 200),
   body text not null check (char_length(body) between 1 and 500),
   request_id uuid references public.project_requests(id) on delete cascade,
-  conversation_id uuid references public.conversations(id) on delete cascade,
+  conversation_id uuid,
   read_at timestamptz,
   created_at timestamptz not null default now()
 );
