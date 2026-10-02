@@ -174,6 +174,7 @@ Whether project-task tables have been applied to the remote Supabase project is 
 - Email/password: implemented in `/auth` and `/admin/login`.
 - Google OAuth: client button and callback route are implemented; provider enablement and Google/Supabase redirect configuration are **UNKNOWN / NOT VERIFIED**.
 - Admin authorization: server-side `app_metadata.role === "admin"`.
+- Admin accounts signing in through `/auth` are routed to `/admin` when their refreshed session contains the admin role.
 - Route behavior: dashboard redirects unauthenticated users to `/auth`; admin helpers redirect unauthenticated users to `/admin/login` and non-admin users to `/dashboard`.
 - Database authorization: RLS policies in `backend/supabase/schema.sql`.
 

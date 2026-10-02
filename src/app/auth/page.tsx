@@ -9,6 +9,15 @@ function safeNextPath(value: string | null) {
   return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
 }
 
+function getLoginDestination(user: unknown, next: string | null) {
+  const requestedPath = safeNextPath(next);
+  const metadata = typeof user === "object" && user !== null && "app_metadata" in user
+    ? user.app_metadata
+    : null;
+  const role = typeof metadata === "object" && metadata !== null && "role" in metadata ? metadata.role : null;
+  return role === "admin" && requestedPath === "/dashboard" ? "/admin" : requestedPath;
+}
+
 export default function AuthPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -50,7 +59,7 @@ export default function AuthPage() {
     } else if (mode === "signup" && result.data.user) {
       await supabase.from("audit_logs").insert({ user_id: result.data.user.id, event: "signup", email: result.data.user.email });
     }
-    window.location.assign(safeNextPath(new URLSearchParams(window.location.search).get("next")));
+    window.location.assign(getLoginDestination(result.data.user ?? {}, new URLSearchParams(window.location.search).get("next")));
   }
 
   async function signInWithGoogle() {

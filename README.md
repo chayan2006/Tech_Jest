@@ -58,6 +58,7 @@ updates, a people directory, and an audit trail for sign-ins and account events.
 The audit trail requires the `audit_logs` table and policies from the latest
 `backend/supabase/schema.sql`; rerun that file in Supabase SQL Editor after
 pulling schema changes. The admin pages reject accounts without the `admin` role.
+When an admin signs in through the normal `/auth` page, the app now sends that account to `/admin` instead of the client dashboard. If the role was added while the account was already signed in, log out completely and sign in again to refresh the session token.
 3. Copy the project URL and anon key into `.env.local`:
 
 ```env
