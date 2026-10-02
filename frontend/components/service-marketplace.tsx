@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { categories, formatPrice, popularServices, services } from "@/frontend/data/services";
+import { categories, formatPrice } from "@/frontend/data/services";
 import type { ServiceCategory } from "@/frontend/data/services";
+import type { Service } from "@/frontend/data/services";
 import { AddToCartButton, CartSummary, CartToast, getCart } from "@/frontend/components/service-cart";
 
-export function ServiceMarketplace() {
+export function ServiceMarketplace({ services }: { services: Service[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<(typeof categories)[number]>("All");
   const [sort, setSort] = useState("popular");
   const [cartSlugs, setCartSlugs] = useState<string[]>([]);
   useEffect(() => { const sync = () => setCartSlugs(getCart()); sync(); window.addEventListener("techjest-cart-updated", sync); return () => window.removeEventListener("techjest-cart-updated", sync); }, []);
-  const selected = useMemo(() => services.filter(item => cartSlugs.includes(item.slug)), [cartSlugs]);
+  const popularServices = useMemo(() => services.filter(item => item.popular), [services]);
+  const selected = useMemo(() => services.filter(item => cartSlugs.includes(item.slug)), [cartSlugs, services]);
   const filtered = useMemo(() => services.filter(item => {
     const matchesCategory = category === "All" || item.category === category;
     const text = `${item.name} ${item.description} ${item.category}`.toLowerCase();

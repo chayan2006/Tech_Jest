@@ -216,6 +216,16 @@ h3 { font-size:1.1rem; letter-spacing:-.03em; margin-bottom:9px; }
 .admin-field-help { color:var(--muted); font-size:.7rem; font-weight:400; line-height:1.4; }
 .settings-form { max-width:760px; }
 .admin-form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.admin-service-manager { display:grid; gap:20px; }
+.admin-service-list { display:grid; gap:16px; }
+.admin-service-row { display:grid; gap:14px; padding:20px 0; border-top:1px solid var(--line); }
+.admin-service-row.is-archived { opacity:.62; }
+.admin-service-row-head { display:flex; justify-content:space-between; gap:16px; align-items:start; }
+.admin-service-row h3 { margin:6px 0 3px; font-size:1.12rem; }
+.admin-service-row small { color:var(--muted); font: .7rem "DM Mono"; }
+.admin-checkbox { display:flex !important; align-items:center; gap:8px; width:max-content; color:var(--ink) !important; }
+.admin-checkbox input { width:auto; }
+.service-create-form { max-width:none; padding:18px; border:1px solid var(--line); border-radius:10px; background:#f8fbff; }
 .portal-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:32px; }
 .portal-grid h2 { margin-bottom:16px; }
 .portal-message { display:grid; gap:5px; border-bottom:1px solid var(--line); padding:10px 0; }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ServiceMarketplace } from "@/frontend/components/service-marketplace";
+import { getServices } from "@/backend/supabase/services";
 
 export const metadata: Metadata = {
   title: "IT Services Marketplace",
@@ -7,4 +8,4 @@ export const metadata: Metadata = {
   alternates: { canonical: "/services" },
 };
 
-export default function Services() { return <ServiceMarketplace />; }
+export default async function Services() { return <ServiceMarketplace services={await getServices()} />; }
