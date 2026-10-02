@@ -26,7 +26,11 @@ export async function getServices(): Promise<Service[]> {
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
-    if (!error && data?.length) return data.map(row => fromRow(row as Record<string, unknown>));
+    if (!error) return (data ?? []).map(row => fromRow(row as Record<string, unknown>));
+    if (error.code !== "42P01" && error.code !== "PGRST205") {
+      console.error("Could not load the service catalog", { code: error.code, message: error.message });
+      return [];
+    }
   } catch {
     // The static catalog keeps the public site available before the migration is applied.
   }
