@@ -6,15 +6,16 @@ import { createClient } from "@/backend/supabase/client";
 import type { Service } from "@/frontend/data/services";
 
 const categories = ["Web Development", "E-Commerce", "AI & Automation", "Business Automation", "Mobile Development", "Design", "Digital Solutions", "Maintenance & Support"];
+type CatalogService = Service & { is_active?: boolean };
 type Draft = Omit<Service, "popular"> & { popular: boolean; is_active: boolean };
 
-function toDraft(service: Service, isActive = true): Draft {
-  return { ...service, popular: Boolean(service.popular), is_active: isActive };
+function toDraft(service: CatalogService): Draft {
+  return { ...service, popular: Boolean(service.popular), is_active: service.is_active ?? true };
 }
 
-export function AdminServices({ initialServices, databaseReady }: { initialServices: Service[]; databaseReady: boolean }) {
+export function AdminServices({ initialServices, databaseReady, databaseError }: { initialServices: CatalogService[]; databaseReady: boolean; databaseError?: string }) {
   const [items, setItems] = useState(() => initialServices.map(service => toDraft(service)));
-  const [message, setMessage] = useState(databaseReady ? "" : "Apply the service catalog migration before saving.");
+  const [message, setMessage] = useState(databaseReady ? "" : `Live service catalog is unavailable${databaseError ? `: ${databaseError}` : "."}`);
   const [saving, setSaving] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [query, setQuery] = useState("");
@@ -85,7 +86,7 @@ export function AdminServices({ initialServices, databaseReady }: { initialServi
   }
 
   return <div className="admin-service-manager">
-    <div className="admin-panel-head"><div><h2>Service catalog</h2><p>Add, edit, publish, archive, and reorder the services shown on the public services page.</p></div><div className="admin-detail-controls"><button type="button" className="btn btn-ghost" disabled={saving || !databaseReady} onClick={importCatalog}>Import current catalog</button><button type="button" className="btn btn-primary" onClick={() => setShowNew(current => !current)}> {showNew ? "Close form" : "Add service"} </button></div></div>
+    <div className="admin-panel-head"><div><h2>Service catalog</h2><p>Add, edit, publish, archive, and reorder the services shown on the public services page.</p>{!databaseReady && <p className="admin-message" role="alert">The page is showing local draft services only. Nothing here is published until the Supabase catalog connection is fixed.</p>}</div><div className="admin-detail-controls"><button type="button" className="btn btn-ghost" disabled={saving || !databaseReady} onClick={importCatalog}>Import current catalog</button><button type="button" className="btn btn-primary" onClick={() => setShowNew(current => !current)}> {showNew ? "Close form" : "Add service"} </button></div></div>
     <div className="service-admin-stats"><div><strong>{items.length}</strong><span>Total services</span></div><div><strong>{items.filter(item => item.is_active).length}</strong><span>Published</span></div><div><strong>{items.filter(item => !item.is_active).length}</strong><span>Archived</span></div><div><strong>{items.filter(item => item.popular).length}</strong><span>Popular</span></div></div>
     {showNew && <form className="admin-form service-create-form" onSubmit={submitNew}><div className="service-form-intro"><div><h3>Create a new service</h3><p>Fill the essentials first. You can refine the details later.</p></div><button type="button" className="text-button" onClick={() => setShowNew(false)}>Cancel</button></div><div className="admin-form-grid"><label>Name<input name="name" required placeholder="e.g. Growth website" /></label><label>Slug<input name="slug" required placeholder="growth-website" /></label><label>Category<select name="category" defaultValue={categories[0]}>{categories.map(category => <option key={category}>{category}</option>)}</select></label><label>Starting price<input name="price" type="number" min="0" placeholder="Leave empty for custom quote" /></label><label>Delivery time<input name="delivery" required placeholder="1–2 weeks" /></label><label>Icon<input name="icon" defaultValue="✦" maxLength={4} /></label></div><label>Description<textarea name="description" required minLength={10} rows={3} placeholder="Explain the outcome this service delivers." /></label><div className="admin-form-grid"><label>Included deliverables<span className="admin-field-help">One item per line.</span><textarea name="included" rows={4} placeholder={"Responsive pages\nContact form\nDeployment"} /></label><label>Technologies<span className="admin-field-help">Comma separated.</span><textarea name="technologies" rows={4} placeholder="Next.js, Supabase, TypeScript" /></label></div><label className="admin-checkbox"><input name="popular" type="checkbox" /> Feature as popular</label><button className="btn btn-primary" disabled={saving}>{saving ? "Creating..." : "Create service"}</button></form>}
     <div className="service-admin-toolbar"><label className="service-search"><span>⌕</span><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search services..." aria-label="Search services" /></label><select value={category} onChange={event => setCategory(event.target.value)} aria-label="Filter by category"><option>All</option>{categories.map(item => <option key={item}>{item}</option>)}</select><select value={visibility} onChange={event => setVisibility(event.target.value)} aria-label="Filter by visibility"><option value="all">All statuses</option><option value="published">Published</option><option value="archived">Archived</option></select><span className="service-results">{filteredItems.length} shown</span></div>
