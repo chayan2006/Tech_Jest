@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/backend/supabase/server";
-import { services } from "@/frontend/data/services";
+import { getServices } from "@/backend/supabase/services";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
+  const services = await getServices();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   let body: unknown;
