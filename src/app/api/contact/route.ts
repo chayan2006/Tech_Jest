@@ -16,7 +16,7 @@ type ContactBody = {
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const services = await getServices();
+  const services = await getServices({ fallbackOnMissingTable: false });
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Please log in before sending a request." }, { status: 401 });
   let body: ContactBody;
@@ -28,11 +28,22 @@ export async function POST(request: Request) {
   const requestedSlugs = Array.isArray(body.serviceSlugs)
     ? [...new Set(body.serviceSlugs.filter((slug): slug is string => typeof slug === "string").map(slug => slug.trim()).filter(Boolean))]
     : [];
+  if (!services.length && (requestedSlugs.length > 0 || typeof body.service === "string")) {
+    return NextResponse.json({ error: "The service catalog is temporarily unavailable. Please try again shortly." }, { status: 503 });
+  }
   const selectedServices = requestedSlugs.map(slug => services.find(item => item.slug === slug)).filter((item): item is (typeof services)[number] => Boolean(item));
   if (requestedSlugs.length !== selectedServices.length) return NextResponse.json({ error: "One or more selected services are invalid." }, { status: 400 });
+  const requestedService = typeof body.service === "string" ? body.service.trim() : "";
+  const matchingService = services.find(item =>
+    item.name.toLowerCase() === requestedService.toLowerCase()
+    || item.category.toLowerCase() === requestedService.toLowerCase()
+  );
+  if (!selectedServices.length && requestedService && requestedService.toLowerCase() !== "not sure yet" && !matchingService) {
+    return NextResponse.json({ error: "Please select an available service." }, { status: 400 });
+  }
   const service = selectedServices.length
     ? selectedServices.map(item => item.name).join(", ")
-    : typeof body.service === "string" ? body.service.trim() : "";
+    : matchingService?.category ?? requestedService;
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const budget = typeof body.budget === "string" ? body.budget.trim() : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";
@@ -68,23 +79,32 @@ export async function POST(request: Request) {
     })));
     if (servicesError) return NextResponse.json({ error: "We saved the request but could not save its selected services. Please contact TechJest." }, { status: 500 });
   }
-  const { data: conversation } = await supabase.from("conversations").insert({
+  const { data: conversation, error: conversationError } = await supabase.from("conversations").insert({
     request_id: createdRequest.id,
     client_id: user.id,
     created_by: user.id,
     title: service.length > 70 ? `${service.slice(0, 67)}...` : service,
   }).select("id").single();
-  if (conversation) {
-    await supabase.from("conversation_participants").insert({ conversation_id: conversation.id, user_id: user.id, role: "client" });
-    await supabase.from("messages").insert({ conversation_id: conversation.id, sender_id: user.id, sender_type: "client", content: message, message_type: "text" });
-    await supabase.from("conversations").update({ last_message_at: new Date().toISOString(), status: "waiting_for_admin" }).eq("id", conversation.id);
+  if (conversationError || !conversation) {
+    return NextResponse.json({ error: "We saved the request but could not open its conversation. Please contact TechJest." }, { status: 500 });
   }
-  await supabase.from("admin_notifications").insert({
+  const { error: participantError } = await supabase.from("conversation_participants").insert({ conversation_id: conversation.id, user_id: user.id, role: "client" });
+  const { error: messageError } = await supabase.from("messages").insert({ conversation_id: conversation.id, sender_id: user.id, sender_type: "client", content: message, message_type: "text" });
+  const { error: conversationUpdateError } = await supabase.from("conversations").update({ last_message_at: new Date().toISOString(), status: "waiting_for_admin" }).eq("id", conversation.id);
+  if (participantError || messageError || conversationUpdateError) {
+    console.error("Could not finish request conversation setup", { participantError, messageError, conversationUpdateError });
+    return NextResponse.json({ error: "We saved the request but could not finish its conversation setup. Please contact TechJest." }, { status: 500 });
+  }
+  const { error: notificationError } = await supabase.from("admin_notifications").insert({
     type: "service_request",
     title: "New service request",
     body: `${name || email || "A client"} requested ${service}.`,
     request_id: createdRequest.id,
     conversation_id: conversation?.id ?? null,
   });
+  if (notificationError) {
+    console.error("Could not create request notification", notificationError);
+    return NextResponse.json({ error: "We saved the request but could not notify the admin team. Please contact TechJest." }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }

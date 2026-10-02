@@ -17,7 +17,8 @@ function fromRow(row: Record<string, unknown>): Service {
   };
 }
 
-export async function getServices(): Promise<Service[]> {
+export async function getServices(options: { fallbackOnMissingTable?: boolean } = {}): Promise<Service[]> {
+  const fallbackOnMissingTable = options.fallbackOnMissingTable ?? true;
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -27,14 +28,15 @@ export async function getServices(): Promise<Service[]> {
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
     if (!error) return (data ?? []).map(row => fromRow(row as Record<string, unknown>));
-    if (error.code !== "42P01" && error.code !== "PGRST205") {
-      console.error("Could not load the service catalog", { code: error.code, message: error.message });
-      return [];
+    if (error.code === "42P01" || error.code === "PGRST205") {
+      return fallbackOnMissingTable ? fallbackServices : [];
     }
-  } catch {
-    // The static catalog keeps the public site available before the migration is applied.
+    console.error("Could not load the service catalog", { code: error.code, message: error.message });
+    return [];
+  } catch (error) {
+    console.error("Could not connect to the service catalog", error);
+    return fallbackOnMissingTable ? fallbackServices : [];
   }
-  return fallbackServices;
 }
 
 export { fallbackServices };
