@@ -1,5 +1,27 @@
 create extension if not exists citext;
 
+create table if not exists public.site_settings (
+  key text primary key check (key ~ '^[a-z0-9_]+$'),
+  value text not null check (char_length(value) <= 1000),
+  updated_by uuid references auth.users(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+alter table public.site_settings enable row level security;
+drop policy if exists "Public can read site settings" on public.site_settings;
+create policy "Public can read site settings" on public.site_settings for select using (true);
+drop policy if exists "Admins can manage site settings" on public.site_settings;
+create policy "Admins can manage site settings" on public.site_settings for all to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+insert into public.site_settings (key, value) values
+  ('homepage_eyebrow', 'Independent technology partner'),
+  ('homepage_title', 'Build software that moves your business forward.'),
+  ('homepage_description', 'TechJest helps startups and growing teams turn good ideas into useful, dependable digital products.'),
+  ('homepage_cta', 'Book a free consultation'),
+  ('contact_email', 'techjest1@gmail.com'),
+  ('whatsapp_number', '919999999999')
+on conflict (key) do nothing;
+
 create table if not exists public.companies (
   id uuid primary key default gen_random_uuid(),
   name citext not null,

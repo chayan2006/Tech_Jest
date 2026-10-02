@@ -193,3 +193,15 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Possible impact:** Runtime regressions or provider outages may be detected late.
 - **Status:** Open operational follow-up; source-level baseline added.
 - **Recommended next investigation/fix:** Configure an approved monitoring provider and Playwright/Vitest suites with test credentials in CI.
+
+## 17. Website settings currently cover core homepage/contact content
+
+- **Issue:** The new website control page manages homepage hero fields and contact values; service catalogue records, portfolio entries, FAQs, and leadership content remain source-managed.
+- **Severity:** Medium
+- **Evidence:** `src/app/admin/settings/page.tsx`, `backend/supabase/site-settings.ts`, and the static source files under `frontend/data/` and `src/app/`.
+- **Affected area:** Admin website control scope.
+- **Current behavior:** Admins can safely edit the first public content surface without changing source code.
+- **Expected behavior:** A complete CMS would provide validated CRUD for every editable public content type.
+- **Possible impact:** Other public content still requires a code change and deployment.
+- **Status:** Open next admin-CMS phase.
+- **Recommended next investigation/fix:** Add a service catalogue and content-management schema, migrate public reads to it, and add audited CRUD screens.

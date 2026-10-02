@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogoModel } from "@/frontend/components/logo-model";
 import Image from "next/image";
+import { getSiteSettings } from "@/backend/supabase/site-settings";
 
 const services = [
   ["Web development", "web-development", "Marketing sites, web apps, and e-commerce that stay fast and maintainable."],
@@ -20,7 +21,7 @@ const process = [
 ];
 const faqs = [["How much does a project cost?", "It depends on the scope and the outcome you need. We’ll give you a clear proposal after a short discovery call."], ["How quickly can we start?", "Most projects begin within one to three weeks of agreeing on scope and availability."], ["Who owns the code?", "You do. We hand over the source code, design files, and documentation created for your project."], ["How will we communicate?", "You’ll have a direct channel with the team, weekly demos, and a shared project board."], ["Can you work with our existing team?", "Yes. We can own a workstream, strengthen your team, or provide a second opinion."], ["What happens after launch?", "We can hand over fully, or stay on with a support retainer for fixes, improvements, and advice."]];
 
-export default function Home() { return <>
+export default async function Home() { const settings = await getSiteSettings(); return <>
   <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -30,7 +31,7 @@ export default function Home() { return <>
       acceptedAnswer: { "@type": "Answer", text: answer },
     })),
   }) }} />
-  <section className="hero"><div className="container hero-grid"><div><div className="eyebrow">Independent technology partner</div><h1>Build software that moves your business forward.</h1><p className="lead">TechJest helps startups and growing teams turn good ideas into useful, dependable digital products.</p><div className="hero-actions"><Link className="btn btn-primary" href="/contact">Book a free consultation</Link><Link className="btn btn-ghost" href="/portfolio">See our work</Link></div><div className="trust"><span className="dot"/> Replies within one business day</div></div><LogoModel /></div></section>
+  <section className="hero"><div className="container hero-grid"><div><div className="eyebrow">{settings.homepage_eyebrow}</div><h1>{settings.homepage_title}</h1><p className="lead">{settings.homepage_description}</p><div className="hero-actions"><Link className="btn btn-primary" href="/contact">{settings.homepage_cta}</Link><Link className="btn btn-ghost" href="/portfolio">See our work</Link></div><div className="trust"><span className="dot"/> Replies within one business day</div></div><LogoModel /></div></section>
   <section className="section"><div className="container detail-grid"><div><div className="eyebrow">TechJest</div><h2>Software development for ambitious businesses.</h2></div><div><p className="lead">TechJest designs and builds websites, web applications, mobile apps, AI/ML solutions, cloud infrastructure, and user-focused digital products.</p><p>Founded and led by <strong>Chayan Khatua</strong> and <strong>Amit Shing Panwar</strong>, TechJest gives startups and growing teams a clear technical partner from the first idea through launch and ongoing improvement.</p><p><Link className="card-link" href="/about">Meet the founders and leadership team →</Link></p></div></div></section>
   <section className="section"><div className="container"><div className="section-head"><div><div className="eyebrow">What we do</div><h2>Technology with a job to do.</h2></div><p>From the first sketch to the systems that keep your product moving, we focus on outcomes over output.</p></div><div className="service-grid">{services.map(([title,slug,desc])=><article className="service-card" key={slug}><h3>{title}</h3><p>{desc}</p><Link className="card-link" href={`/services/${slug}`}>Explore service</Link></article>)}</div></div></section>
   <section className="section band"><div className="container"><div className="section-head"><div><div className="eyebrow">Why Tech Jest?</div><h2>A delivery process built for confidence.</h2></div><p className="lead">Every project moves through clear stages, from understanding the business to improving the product after launch.</p></div><div className="process-grid">{process.map(([num,title,desc])=><div className="process-step" key={num}><div className="step-no">{num} <span aria-hidden="true">—</span></div><h3>{title}</h3><p>{desc}</p></div>)}</div></div></section>

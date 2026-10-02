@@ -56,6 +56,7 @@ The purpose is evidenced by `README.md`, page metadata, route content, and the c
 - `frontend/components/admin-task-form.tsx`: admin project task creation form.
 - `frontend/components/project-message-form.tsx`: authenticated client project messaging form.
 - `frontend/components/admin-project-form.tsx`: admin project creation form.
+- `frontend/components/admin-site-settings.tsx`: admin editor for public homepage/contact settings.
 - `frontend/data/services.ts`: static service definitions, categories, popular services, and price formatting.
 
 ## Frontend flow
@@ -81,6 +82,7 @@ Current application routes discovered in `src/app/`:
 - `/admin/proposals`
 - `/admin/projects`
 - `/admin/projects/[id]`
+- `/admin/settings`
 - `/admin/invoices`
 - `/project/[id]`
 - `/api/ai/recommend`
@@ -240,6 +242,7 @@ The README recommends importing the repository into Vercel and enabling Git inte
 - Admin request details can create proposals; protected proposal and project list pages provide the first commercial/delivery workspace.
 - Admin project details can create delivery tasks, and the client dashboard displays authorized projects and their task summaries.
 - Admins can create project delivery records and clients can open a project portal with proposal, task, document, invoice, and message sections.
+- Admin dashboard provides control links and counts for requests, people, CRM, proposals, projects, invoices, activity, and public website settings.
 - Client project pages display authorized tasks, private document metadata, invoices, and messages; authenticated AI recommendations return service-catalog suggestions only.
 - `/api/health` reports public Supabase configuration presence without exposing values.
 - Supabase schema with profiles, companies, project requests, audit logs, triggers, indexes, and RLS.

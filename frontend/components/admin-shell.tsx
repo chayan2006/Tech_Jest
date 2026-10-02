@@ -7,6 +7,7 @@ const links = [
   ["Proposals", "/admin/proposals"],
   ["Projects", "/admin/projects"],
   ["Invoices", "/admin/invoices"],
+  ["Website settings", "/admin/settings"],
   ["Requests", "/admin/requests"],
   ["People", "/admin/users"],
   ["Activity", "/admin/activity"],
