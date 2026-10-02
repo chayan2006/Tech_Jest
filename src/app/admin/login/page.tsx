@@ -16,10 +16,16 @@ export default function AdminLoginPage() {
     const supabase = createClient();
     const result = await supabase.auth.signInWithPassword({ email: email.trim(), password });
 
-    if (result.error || !result.data.user || result.data.user.app_metadata?.role !== "admin") {
+    if (result.error || !result.data.user) {
       await supabase.auth.signOut();
       setBusy(false);
-      setMessage(result.error ? result.error.message : "This account is not authorized for admin access.");
+      setMessage(result.error?.message ?? "Could not sign in. Check the email and password.");
+      return;
+    }
+    if (result.data.user.app_metadata?.role !== "admin") {
+      await supabase.auth.signOut();
+      setBusy(false);
+      setMessage("This account is a client account, not an admin account. Add role=admin to Supabase Auth user metadata, then sign in again.");
       return;
     }
 
