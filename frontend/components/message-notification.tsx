@@ -9,6 +9,10 @@ export async function MessageNotification({ userId, admin = false }: { userId: s
     : await conversationsQuery.eq("client_id", userId);
   const ids = conversations?.map(item => item.id) ?? [];
   let unread = 0;
+  if (admin) {
+    const { count } = await supabase.from("admin_notifications").select("id", { count: "exact", head: true }).is("read_at", null);
+    unread += count ?? 0;
+  }
   if (ids.length) {
     const [{ data: messages }, { data: reads }] = await Promise.all([
       supabase.from("messages").select("conversation_id, sender_type, created_at").in("conversation_id", ids).neq("sender_id", userId).is("deleted_at", null),
@@ -21,5 +25,5 @@ export async function MessageNotification({ userId, admin = false }: { userId: s
       return new Date(message.created_at).getTime() > (readMap.get(message.conversation_id) ?? 0);
     }).length;
   }
-  return <Link className="message-notification" href={admin ? "/admin/messages" : "/messages"} aria-label={`${unread} unread messages`}><span aria-hidden="true">🔔</span>{unread > 0 && <b>{unread > 99 ? "99+" : unread}</b>}<span className="message-notification-label">{unread ? `${unread} new` : "Messages"}</span></Link>;
+  return <Link className="message-notification" href={admin ? "/admin/notifications" : "/messages"} aria-label={`${unread} unread notifications`}><span aria-hidden="true">🔔</span>{unread > 0 && <b>{unread > 99 ? "99+" : unread}</b>}<span className="message-notification-label">{unread ? `${unread} new` : "Notifications"}</span></Link>;
 }

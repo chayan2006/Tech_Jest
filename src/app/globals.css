@@ -277,6 +277,19 @@ h3 { font-size:1.1rem; letter-spacing:-.03em; margin-bottom:9px; }
 .message-notification b { display:grid; place-items:center; min-width:18px; height:18px; padding:0 4px; border-radius:999px; background:#d92d20; color:#fff; font:600 .62rem "DM Mono"; }
 .message-notification-label { color:var(--muted); font-size:.7rem; font-weight:600; }
 .admin-sidebar-foot .message-notification { margin-bottom:12px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#f8fbff; }
+.notification-center { display:grid; gap:18px; }
+.notification-center-head { display:flex; justify-content:space-between; gap:16px; align-items:start; padding-bottom:16px; border-bottom:1px solid var(--line); }
+.notification-center-head h2 { margin:0 0 5px; font-size:1.35rem; }
+.notification-center-head p { margin:0; color:var(--muted); font-size:.8rem; }
+.notification-list { display:grid; }
+.notification-item { display:flex; align-items:center; gap:14px; padding:17px 0; border-bottom:1px solid var(--line); }
+.notification-item.is-unread { padding-left:12px; border-left:3px solid #0b6fe4; background:#f8fbff; }
+.notification-item-icon { display:grid; place-items:center; width:36px; height:36px; flex:0 0 auto; border-radius:9px; background:#eaf3ff; color:#0b6fe4; }
+.notification-item-body { flex:1; min-width:0; }
+.notification-item-top { display:flex; align-items:center; gap:8px; }
+.notification-item-body p { margin:5px 0; color:var(--muted); font-size:.8rem; }
+.notification-item-body small { color:var(--muted); font-size:.68rem; }
+.notification-unread-dot { padding:3px 6px; border-radius:999px; background:#fee4e2; color:#b42318; font:600 .6rem "DM Mono"; text-transform:uppercase; }
 .portal-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:32px; }
 .portal-grid h2 { margin-bottom:16px; }
 .portal-message { display:grid; gap:5px; border-bottom:1px solid var(--line); padding:10px 0; }

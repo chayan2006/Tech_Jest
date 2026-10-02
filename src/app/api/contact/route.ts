@@ -78,5 +78,12 @@ export async function POST(request: Request) {
     await supabase.from("messages").insert({ conversation_id: conversation.id, sender_id: user.id, sender_type: "client", content: message, message_type: "text" });
     await supabase.from("conversations").update({ last_message_at: new Date().toISOString(), status: "waiting_for_admin" }).eq("id", conversation.id);
   }
+  await supabase.from("admin_notifications").insert({
+    type: "service_request",
+    title: "New service request",
+    body: `${name || email || "A client"} requested ${service}.`,
+    request_id: createdRequest.id,
+    conversation_id: conversation?.id ?? null,
+  });
   return NextResponse.json({ ok: true });
 }

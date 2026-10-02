@@ -48,6 +48,7 @@ Authentication uses Supabase Auth and project history uses a protected PostgreSQ
    If an older SQL tab reports that `Users can create project messages` already exists, run [`backend/supabase/fix-project-messages-policy.sql`](./backend/supabase/fix-project-messages-policy.sql) once in Supabase SQL Editor.
    If the admin Services screen says the catalog is unavailable, run [`backend/supabase/fix-services-catalog.sql`](./backend/supabase/fix-services-catalog.sql) in a new SQL tab, then open `/admin/services` and choose **Import current catalog**.
    For client/admin messaging, apply [`backend/supabase/fix-conversations.sql`](./backend/supabase/fix-conversations.sql) in a new SQL tab when the main schema has already been applied.
+   For admin service-request notifications, apply [`backend/supabase/fix-admin-notifications.sql`](./backend/supabase/fix-admin-notifications.sql) in a new SQL tab when the main schema has already been applied.
    A lightweight `/api/health` endpoint reports whether the required public Supabase configuration is present; it never returns secret values.
 
 ### Admin access
