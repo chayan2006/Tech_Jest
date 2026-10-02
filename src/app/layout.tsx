@@ -120,7 +120,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
     <a className="skip" href="#main">Skip to content</a>
     <header className="site-header"><div className="container nav">
-      <div className="nav-left"><Link className="logo" href="/"><Image className="brand-image" src="/images/techjest-brand.png" alt="TechJest" width={138} height={92} priority /></Link>{user && <ProfileBadge email={user.email} name={profileName} avatarUrl={avatarUrl} />}</div>
+      <div className="nav-left"><Link className="logo" href="/"><Image className="brand-image" src="/images/techjest-brand.png" alt="TechJest" width={138} height={92} /></Link>{user && <ProfileBadge email={user.email} name={profileName} avatarUrl={avatarUrl} />}</div>
       <nav className="nav-links" aria-label="Main navigation">{nav.filter(([, href]) => href !== "/auth" || !user).map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
       <div className="nav-actions">{user && <MessageNotification userId={user.id} admin={user.app_metadata?.role === "admin"} />}<CartLink /><Link className="btn btn-primary" href="/contact">Book a consultation</Link><MobileMenu /></div>
     </div></header>
