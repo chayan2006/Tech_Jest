@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServices } from "@/backend/supabase/services";
 import { AddToCartButton } from "@/frontend/components/service-cart";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 const data: Record<string,{title:string; intro:string; benefits:string[]; deliverables:string[]}> = {
  "web-development":{title:"Web Development",intro:"Digital experiences that make your offer easier to understand, trust, and choose.",benefits:["A clear path from first visit to action","Fast pages that respect attention","A codebase your team can extend"],deliverables:["Discovery and information architecture","Responsive interface implementation","CMS or content model","Analytics-ready launch"]},
  "mobile-app-development":{title:"Mobile App Development",intro:"Mobile products that feel natural to use and practical to maintain.",benefits:["Choose native or cross-platform with evidence","Design for the moments that matter","A launch plan beyond the app store"],deliverables:["User flows and prototypes","iOS and Android implementation","App analytics setup","Release and handover support"]},

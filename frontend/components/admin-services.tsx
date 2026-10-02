@@ -41,7 +41,7 @@ export function AdminServices({ initialServices, databaseReady, databaseError }:
       technologies: service.technologies,
       updated_at: new Date().toISOString(),
     }, { onConflict: "slug" });
-    setMessage(error ? "Could not save service. Confirm the latest schema and admin role." : `${service.name} saved.`);
+    setMessage(error ? `Could not save service: ${error.message}` : `${service.name} saved to the live catalog.`);
     setSaving(false);
     return !error;
   }
@@ -59,7 +59,7 @@ export function AdminServices({ initialServices, databaseReady, databaseError }:
       items.map((service, index) => ({ ...service, sort_order: index, updated_at: new Date().toISOString() })),
       { onConflict: "slug" },
     );
-    setMessage(error ? "Could not import the catalog. Confirm the latest schema and admin role." : "Current catalog imported. You can now edit every service here.");
+    setMessage(error ? `Could not import the catalog: ${error.message}` : "Current catalog imported. You can now edit every service here.");
     setSaving(false);
   }
 

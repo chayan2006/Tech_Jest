@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { ServiceMarketplace } from "@/frontend/components/service-marketplace";
 import { getServices } from "@/backend/supabase/services";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata: Metadata = {
   title: "IT Services Marketplace",
   description: "Browse TechJest's individual web, AI, e-commerce, mobile, design, automation, and support services. Build a project package and request a quote.",
