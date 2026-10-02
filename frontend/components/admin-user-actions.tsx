@@ -11,7 +11,8 @@ export function AdminUserActions({ userId, name }: { userId: string; name: strin
     setBusy(true);
     const response = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
     if (!response.ok) {
-      window.alert("Could not remove this user's data. Apply the latest people policy migration.");
+      const result = await response.json().catch(() => null);
+      window.alert(result?.error || "Could not remove this user's data.");
       setBusy(false);
       return;
     }
