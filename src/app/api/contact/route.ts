@@ -67,5 +67,16 @@ export async function POST(request: Request) {
     })));
     if (servicesError) return NextResponse.json({ error: "We saved the request but could not save its selected services. Please contact TechJest." }, { status: 500 });
   }
+  const { data: conversation } = await supabase.from("conversations").insert({
+    request_id: createdRequest.id,
+    client_id: user.id,
+    created_by: user.id,
+    title: service.length > 70 ? `${service.slice(0, 67)}...` : service,
+  }).select("id").single();
+  if (conversation) {
+    await supabase.from("conversation_participants").insert({ conversation_id: conversation.id, user_id: user.id, role: "client" });
+    await supabase.from("messages").insert({ conversation_id: conversation.id, sender_id: user.id, sender_type: "client", content: message, message_type: "text" });
+    await supabase.from("conversations").update({ last_message_at: new Date().toISOString(), status: "waiting_for_admin" }).eq("id", conversation.id);
+  }
   return NextResponse.json({ ok: true });
 }
