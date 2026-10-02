@@ -92,3 +92,12 @@ This is a chronological record of decisions evidenced by repository history, cur
 - **Evidence/source:** `README.md` and current homepage content.
 - **Reason status:** **Verified**.
 
+## 10. Separate operational request status from CRM lead stage
+
+- **Decision:** Keep the existing request status (`received`, `in_progress`, `completed`) and add a separate commercial pipeline stage (`received`, `qualified`, `proposal`, `negotiation`, `won`, `project`).
+- **Why it appears to have been made:** Delivery/processing status and sales progression represent different workflows and need independent admin controls.
+- **Current implementation:** `project_requests.lead_stage` is defined in `backend/supabase/schema.sql`; `/admin/crm` groups requests by it; `/admin/requests/[id]` exposes `AdminLeadStage` alongside `AdminRequestStatus`.
+- **Files/components affected:** `backend/supabase/schema.sql`, `frontend/components/admin-lead-stage.tsx`, `src/app/admin/crm/page.tsx`, `src/app/admin/requests/[id]/page.tsx`.
+- **Known trade-offs:** The two fields can become inconsistent until explicit transition rules or workflow automation are added.
+- **Evidence/source:** Current schema and admin routes/components.
+- **Reason status:** **Inferred**; no separate ADR records the original product rationale.

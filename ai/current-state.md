@@ -51,6 +51,7 @@ The purpose is evidenced by `README.md`, page metadata, route content, and the c
 - `frontend/components/service-cart.tsx`: local cart state, navbar counter, add/remove controls, toast, and summary.
 - `frontend/components/admin-shell.tsx`: admin navigation shell.
 - `frontend/components/admin-request-status.tsx`: client-side admin request status update.
+- `frontend/components/admin-lead-stage.tsx`: client-side admin CRM lead-stage update.
 - `frontend/data/services.ts`: static service definitions, categories, popular services, and price formatting.
 
 ## Frontend flow
@@ -215,6 +216,7 @@ The README recommends importing the repository into Vercel and enabling Git inte
 - Supabase email/password auth and Google OAuth callback flow.
 - Authenticated dashboard and request history.
 - Admin overview, request list/status updates, people directory, and activity log.
+- Admin CRM pipeline and request detail pages allow admins to update both operational status and commercial lead stage.
 - Admin CRM pipeline with additive lead stages (`received`, `qualified`, `proposal`, `negotiation`, `won`, `project`) and protected request detail pages.
 - Supabase schema with profiles, companies, project requests, audit logs, triggers, indexes, and RLS.
 - SEO metadata, JSON-LD, sitemap, robots rules, and Google verification asset.

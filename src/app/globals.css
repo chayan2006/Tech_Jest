@@ -203,6 +203,7 @@ h3 { font-size:1.1rem; letter-spacing:-.03em; margin-bottom:9px; }
 .admin-detail-list dd { margin:0; max-width:65%; text-align:right; font-size:.82rem; font-weight:700; }
 .crm-stage-badge { display:inline-flex; margin:18px 0; padding:8px 12px; border-radius:999px; background:#e8f1fc; color:#0b6fe4; font:12px "DM Mono"; text-transform:uppercase; }
 .admin-detail-services { margin-top:20px; }
+.admin-detail-controls { display:flex; flex-wrap:wrap; gap:16px; margin-top:20px; }
 .status-in_progress { background:#fff4d6; color:#8a5b00; }
 .status-completed { background:#e4f4ea; color:#16704a; }
 .admin-table-wrap { overflow-x:auto; padding:0; }
