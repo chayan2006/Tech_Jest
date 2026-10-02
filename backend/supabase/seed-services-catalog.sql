@@ -1,4 +1,4 @@
--- Run after fix-services-catalog.sql. Safe to run repeatedly.
+-- Run after schema.sql. Safe to run repeatedly.
 insert into public.service_catalog (slug, name, category, description, price, delivery, icon, popular, included, technologies, is_active, sort_order)
 values
 ('business-website', 'Business Website', 'Web Development', 'A polished, conversion-focused website that makes your business easier to trust.', 25000, '7–14 days', '✦', true, '["Responsive pages","Contact form","SEO-ready structure","Deployment"]'::jsonb, '["Next.js","TypeScript","Supabase"]'::jsonb, false, 0),
