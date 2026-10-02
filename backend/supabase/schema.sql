@@ -548,3 +548,11 @@ drop policy if exists "Admins can send messages" on public.messages;
 create policy "Admins can send messages" on public.messages for insert to authenticated
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin' and sender_id = auth.uid() and sender_type in ('admin','internal'));
 alter table public.messages replica identity full;
+
+-- The reset script recreates the public schema, so table privileges must be
+-- applied after all application tables exist. RLS policies still limit rows.
+grant usage on schema public to anon, authenticated;
+grant select on public.service_catalog to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant select, insert on all tables in schema public to anon;
+grant usage, select on all sequences in schema public to anon, authenticated;
