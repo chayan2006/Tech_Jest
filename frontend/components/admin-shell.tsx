@@ -4,6 +4,8 @@ import type { ReactNode } from "react";
 const links = [
   ["Overview", "/admin"],
   ["CRM", "/admin/crm"],
+  ["Proposals", "/admin/proposals"],
+  ["Projects", "/admin/projects"],
   ["Requests", "/admin/requests"],
   ["People", "/admin/users"],
   ["Activity", "/admin/activity"],

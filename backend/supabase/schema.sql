@@ -235,3 +235,48 @@ create policy "Admins can read all request services"
   on public.project_request_services for select
   to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+create table if not exists public.proposals (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.project_requests(id) on delete cascade,
+  title text not null check (char_length(title) between 1 and 200),
+  summary text not null check (char_length(summary) between 1 and 5000),
+  amount numeric check (amount is null or amount >= 0),
+  currency text not null default 'INR' check (currency in ('INR', 'USD')),
+  valid_until date,
+  status text not null default 'draft' check (status in ('draft', 'sent', 'accepted', 'declined', 'expired')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists proposals_request_idx on public.proposals (request_id, created_at desc);
+alter table public.proposals enable row level security;
+drop policy if exists "Admins can manage proposals" on public.proposals;
+create policy "Admins can manage proposals" on public.proposals for all to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Users can read their proposals" on public.proposals;
+create policy "Users can read their proposals" on public.proposals for select
+  using (exists (select 1 from public.project_requests where project_requests.id = proposals.request_id and project_requests.user_id = auth.uid()));
+
+create table if not exists public.projects (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid references public.project_requests(id) on delete set null,
+  proposal_id uuid references public.proposals(id) on delete set null,
+  name text not null check (char_length(name) between 1 and 200),
+  status text not null default 'planned' check (status in ('planned', 'active', 'on_hold', 'completed')),
+  start_date date,
+  target_date date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists projects_status_idx on public.projects (status, created_at desc);
+alter table public.projects enable row level security;
+drop policy if exists "Admins can manage projects" on public.projects;
+create policy "Admins can manage projects" on public.projects for all to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Users can read their projects" on public.projects;
+create policy "Users can read their projects" on public.projects for select
+  using (exists (select 1 from public.project_requests where project_requests.id = projects.request_id and project_requests.user_id = auth.uid()));

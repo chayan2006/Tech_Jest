@@ -4,6 +4,7 @@ import { requireAdmin } from "@/backend/supabase/admin";
 import { AdminShell } from "@/frontend/components/admin-shell";
 import { AdminRequestStatus } from "@/frontend/components/admin-request-status";
 import { AdminLeadStage, leadStages } from "@/frontend/components/admin-lead-stage";
+import { AdminProposalForm } from "@/frontend/components/admin-proposal-form";
 
 export default async function AdminRequestDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -20,5 +21,6 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
       <section className="admin-panel"><div className="admin-panel-head"><div><h2>Pipeline stage</h2><p>Keep the commercial workflow visible to the team.</p></div></div><div className="crm-stage-badge">{request.lead_stage ?? "received"}</div><p className="admin-message">{request.description ?? request.message}</p><div className="admin-detail-controls"><AdminLeadStage requestId={request.id} initialStage={leadStages.some(([value]) => value === request.lead_stage) ? request.lead_stage : "received"} /><AdminRequestStatus requestId={request.id} initialStatus={request.status} /></div></section>
     </div>
     <section className="admin-panel admin-detail-services"><div className="admin-panel-head"><div><h2>Selected services</h2><p>Historical snapshots from the quote request.</p></div></div>{selectedServices?.length ? <div className="admin-mini-list">{selectedServices.map((service, index) => <div className="admin-mini-row" key={`${service.service_name_snapshot}-${index}`}><strong>{service.service_name_snapshot}</strong><span>{service.price_snapshot ? `From ₹${Number(service.price_snapshot).toLocaleString("en-IN")}` : "Custom quote"}</span></div>)}</div> : <p className="admin-message">No service snapshots are available for this request.</p>}</section>
+    <section className="admin-panel admin-detail-services"><div className="admin-panel-head"><div><h2>Create proposal</h2><p>Turn the qualified request into a clear commercial offer.</p></div></div><AdminProposalForm requestId={request.id} defaultTitle={request.service} /></section>
   </AdminShell>;
 }

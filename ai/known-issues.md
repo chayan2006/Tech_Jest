@@ -133,3 +133,15 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Possible impact:** CRM page/database query errors until migration is applied.
 - **Status:** Open deployment prerequisite; not verified against remote Supabase.
 - **Recommended next investigation/fix:** Apply the idempotent schema in Supabase SQL Editor and test admin CRM access with a real authorized account.
+
+## 12. Proposal and project tables require remote schema application
+
+- **Issue:** The new proposal and project admin pages depend on additive `proposals` and `projects` tables.
+- **Severity:** Medium
+- **Evidence:** `backend/supabase/schema.sql` defines both tables; the local build includes `/admin/proposals` and `/admin/projects`.
+- **Affected area:** Admin commercial and delivery workspaces.
+- **Current behavior:** Source-level routes and RLS policies are present; remote database availability is not verified.
+- **Expected behavior:** Admins should be able to create proposals and view projects after the schema is applied.
+- **Possible impact:** The pages will show their unavailable state until the migration is applied.
+- **Status:** Open deployment prerequisite.
+- **Recommended next investigation/fix:** Apply the idempotent schema and test proposal creation using an authorized admin account.

@@ -52,6 +52,7 @@ The purpose is evidenced by `README.md`, page metadata, route content, and the c
 - `frontend/components/admin-shell.tsx`: admin navigation shell.
 - `frontend/components/admin-request-status.tsx`: client-side admin request status update.
 - `frontend/components/admin-lead-stage.tsx`: client-side admin CRM lead-stage update.
+- `frontend/components/admin-proposal-form.tsx`: admin proposal creation form tied to a request.
 - `frontend/data/services.ts`: static service definitions, categories, popular services, and price formatting.
 
 ## Frontend flow
@@ -74,6 +75,8 @@ Current application routes discovered in `src/app/`:
 - `/admin/login`
 - `/admin/requests`
 - `/admin/requests/[id]`
+- `/admin/proposals`
+- `/admin/projects`
 - `/admin/users`
 - `/admin/activity`
 - `/api/contact`
@@ -140,12 +143,15 @@ There is no separate email notification route visible in the current source. `CO
 - `project_requests`: authenticated user, optional company relation, legacy service/message/budget fields, structured name/email/phone/company/budget range/timeline/description fields, constrained status (`received`, `in_progress`, `completed`), timestamps, and indexes.
 - `project_request_services`: request-linked service slug, service name snapshot, price snapshot, timestamp, and RLS policies for the owning client/admin.
 - `audit_logs`: optional user, constrained event (`login`, `admin_login`, `signup`), email, optional IP address, timestamp, index.
+- `proposals`: request-linked title, summary, amount/currency, validity date, and lifecycle status.
+- `projects`: optional request/proposal links, name, delivery status, and target dates.
 
 The `handle_new_user` trigger creates a profile and may create/link a company from signup metadata. The SQL also backfills profiles/companies and adds columns idempotently.
 
 RLS is enabled on the four application tables. Users can read/update their own profile, read their own requests, and insert their own request/audit rows. Admins identified by JWT `app_metadata.role = 'admin'` can read all profiles, requests, and audit logs, and update request status.
 
 Whether this exact SQL has been applied to the remote Supabase project is **UNKNOWN / NOT VERIFIED**.
+Whether proposal/project tables have been applied to the remote Supabase project is **UNKNOWN / NOT VERIFIED**.
 
 ## Authentication and authorization
 
@@ -218,6 +224,7 @@ The README recommends importing the repository into Vercel and enabling Git inte
 - Admin overview, request list/status updates, people directory, and activity log.
 - Admin CRM pipeline and request detail pages allow admins to update both operational status and commercial lead stage.
 - Admin CRM pipeline with additive lead stages (`received`, `qualified`, `proposal`, `negotiation`, `won`, `project`) and protected request detail pages.
+- Admin request details can create proposals; protected proposal and project list pages provide the first commercial/delivery workspace.
 - Supabase schema with profiles, companies, project requests, audit logs, triggers, indexes, and RLS.
 - SEO metadata, JSON-LD, sitemap, robots rules, and Google verification asset.
 - CI typecheck/build gate.
