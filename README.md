@@ -43,7 +43,8 @@ Open `http://localhost:3000`.
 Authentication uses Supabase Auth and project history uses a protected PostgreSQL table.
 
 1. Create a Supabase project.
-2. In Supabase SQL Editor, run [`backend/supabase/schema.sql`](./backend/supabase/schema.sql). If you already ran an older version, run the updated file again; it is safe to rerun and adds profiles, signup metadata, and the budget column.
+2. In Supabase SQL Editor, run [`backend/supabase/schema.sql`](./backend/supabase/schema.sql). If you already ran an older version, run the updated file again; it is safe to rerun and adds profiles, signup metadata, structured quote fields, and selected-service snapshots.
+   The latest schema also adds an additive `lead_stage` field for the protected admin CRM pipeline.
 
 ### Admin access
 

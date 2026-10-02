@@ -5,6 +5,10 @@ import { createClient } from "@/backend/supabase/client";
 
 type Mode = "login" | "signup";
 
+function safeNextPath(value: string | null) {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+}
+
 export default function AuthPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
@@ -46,7 +50,7 @@ export default function AuthPage() {
     } else if (mode === "signup" && result.data.user) {
       await supabase.from("audit_logs").insert({ user_id: result.data.user.id, event: "signup", email: result.data.user.email });
     }
-    window.location.assign("/dashboard");
+    window.location.assign(safeNextPath(new URLSearchParams(window.location.search).get("next")));
   }
 
   async function signInWithGoogle() {

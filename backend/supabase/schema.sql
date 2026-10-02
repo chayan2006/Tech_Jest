@@ -113,12 +113,32 @@ create table if not exists public.project_requests (
   service text not null,
   message text not null check (char_length(message) between 20 and 5000),
   budget text,
+  name text,
+  email text,
+  phone text,
+  company text,
+  budget_range text,
+  timeline text,
+  description text,
+  lead_stage text not null default 'received' check (lead_stage in ('received', 'qualified', 'proposal', 'negotiation', 'won', 'project')),
   status text not null default 'received' check (status in ('received', 'in_progress', 'completed')),
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 alter table public.project_requests add column if not exists budget text;
 alter table public.project_requests add column if not exists company_id uuid references public.companies(id) on delete set null;
+alter table public.project_requests add column if not exists name text;
+alter table public.project_requests add column if not exists email text;
+alter table public.project_requests add column if not exists phone text;
+alter table public.project_requests add column if not exists company text;
+alter table public.project_requests add column if not exists budget_range text;
+alter table public.project_requests add column if not exists timeline text;
+alter table public.project_requests add column if not exists description text;
+alter table public.project_requests add column if not exists lead_stage text not null default 'received';
+alter table public.project_requests add column if not exists updated_at timestamptz not null default now();
+alter table public.project_requests drop constraint if exists project_requests_lead_stage_check;
+alter table public.project_requests add constraint project_requests_lead_stage_check check (lead_stage in ('received', 'qualified', 'proposal', 'negotiation', 'won', 'project'));
 create index if not exists project_requests_user_created_idx on public.project_requests (user_id, created_at desc);
 create index if not exists project_requests_company_idx on public.project_requests (company_id);
 
@@ -177,3 +197,41 @@ create policy "Admins can update project requests"
   on public.project_requests for update to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+
+create table if not exists public.project_request_services (
+  id uuid primary key default gen_random_uuid(),
+  request_id uuid not null references public.project_requests(id) on delete cascade,
+  service_slug text not null check (char_length(service_slug) between 1 and 160),
+  service_name_snapshot text not null check (char_length(service_name_snapshot) between 1 and 200),
+  price_snapshot numeric,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists project_request_services_request_idx
+  on public.project_request_services (request_id);
+
+alter table public.project_request_services enable row level security;
+
+drop policy if exists "Users can read their own request services" on public.project_request_services;
+create policy "Users can read their own request services"
+  on public.project_request_services for select
+  using (exists (
+    select 1 from public.project_requests
+    where project_requests.id = project_request_services.request_id
+      and project_requests.user_id = auth.uid()
+  ));
+
+drop policy if exists "Users can create their own request services" on public.project_request_services;
+create policy "Users can create their own request services"
+  on public.project_request_services for insert
+  with check (exists (
+    select 1 from public.project_requests
+    where project_requests.id = project_request_services.request_id
+      and project_requests.user_id = auth.uid()
+  ));
+
+drop policy if exists "Admins can read all request services" on public.project_request_services;
+create policy "Admins can read all request services"
+  on public.project_request_services for select
+  to authenticated
+  using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
