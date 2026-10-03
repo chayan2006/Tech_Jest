@@ -91,7 +91,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       { "@type": "Person", "@id": `${siteUrl}/about#nayan-roy`, name: "Nayan Roy", jobTitle: "CMO" },
     ],
     sameAs: ["https://github.com/chayan2006/Tech_Jest"],
-    areaServed: "Worldwide",
+    areaServed: [
+      { "@type": "Country", name: "India" },
+      { "@type": "Place", name: "Worldwide" },
+    ],
     knowsLanguage: "English",
     knowsAbout: ["Web development", "Mobile app development", "Artificial intelligence", "Machine learning", "Cloud computing", "DevOps", "UI/UX design", "IT consulting"],
     hasOfferCatalog: {
@@ -114,6 +117,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     description: "Official website of TechJest, led by Founders and CEOs Chayan Khatua and Amit Shing Panwar.",
     about: { "@id": `${siteUrl}/#organization` },
     keywords: "software development, web development, mobile apps, AI, cloud, DevOps, UI/UX design, IT consulting",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteUrl}/services?query={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
   };
   return <html lang="en"><body>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
