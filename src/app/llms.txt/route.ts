@@ -1,4 +1,7 @@
+import { getSiteUrl } from "@/lib/site-url";
+
 export function GET() {
+  const siteUrl = getSiteUrl();
   return new Response(`# TechJest
 
 > TechJest is a software development company for startups and growing businesses.
@@ -14,11 +17,11 @@ export function GET() {
 
 ## Public pages
 
-- Home: /
-- Services: /services
-- Work: /portfolio
-- About: /about
-- Contact: /contact
+- Home: ${siteUrl}/
+- Services: ${siteUrl}/services
+- Work: ${siteUrl}/portfolio
+- About: ${siteUrl}/about
+- Contact: ${siteUrl}/contact
 
 ## Contact
 

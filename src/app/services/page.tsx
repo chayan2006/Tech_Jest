@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getSiteUrl } from "@/lib/site-url";
 import { ServiceMarketplace } from "@/frontend/components/service-marketplace";
 import { getServices } from "@/backend/supabase/services";
 
@@ -19,8 +20,8 @@ export default async function Services() {
       "@type": "CollectionPage",
       name: "TechJest IT Services Marketplace",
       description: "Browse practical web, mobile, AI, cloud, design, and support services from TechJest.",
-      url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/services`,
-      about: { "@id": `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/#organization` },
+      url: `${getSiteUrl()}/services`,
+      about: { "@id": `${getSiteUrl()}/#organization` },
       mainEntity: {
         "@type": "ItemList",
         numberOfItems: services.length,
@@ -31,8 +32,8 @@ export default async function Services() {
             "@type": "Service",
             name: service.name,
             description: service.description,
-            url: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/services/${service.slug}`,
-            provider: { "@id": `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/#organization` },
+            url: `${getSiteUrl()}/services/${service.slug}`,
+            provider: { "@id": `${getSiteUrl()}/#organization` },
             areaServed: "Worldwide",
           },
         })),

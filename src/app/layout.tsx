@@ -7,9 +7,11 @@ import { ProfileBadge } from "@/frontend/components/profile-badge";
 import { createClient } from "@/backend/supabase/server";
 import { CartLink } from "@/frontend/components/service-cart";
 import { MessageNotification } from "@/frontend/components/message-notification";
+import { getSiteUrl } from "@/lib/site-url";
 
+const siteUrl = getSiteUrl();
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(siteUrl),
   title: { default: "TechJest | Software Development Company for Growing Businesses", template: "%s | TechJest" },
   description: "TechJest is a software development company for startups and growing businesses. We build websites, web apps, mobile apps, AI/ML solutions, cloud infrastructure, and digital products.",
   keywords: ["TechJest", "software development company", "web development", "mobile app development", "AI ML solutions", "cloud DevOps", "UI UX design", "IT consulting"],
@@ -24,6 +26,7 @@ export const metadata: Metadata = {
   creator: "Chayan Khatua and Amit Shing Panwar",
   publisher: "TechJest",
   alternates: { canonical: "/" },
+  icons: { icon: "/images/techjest-brand.png", apple: "/images/techjest-brand.png" },
   openGraph: {
     type: "website",
     locale: "en_IN",
@@ -49,6 +52,7 @@ export const metadata: Metadata = {
   },
   other: {
     "ai-content-declaration": "This website contains original information about TechJest services, leadership, and work.",
+    "ai-purpose": "Official company information, services, leadership, portfolio, and contact details for TechJest.",
   },
 };
 
@@ -61,17 +65,19 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     ? user.user_metadata.full_name
     : typeof user?.user_metadata?.name === "string" ? user.user_metadata.name : undefined;
   const avatarUrl = typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : undefined;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${siteUrl}/#organization`,
     name: "TechJest",
+    legalName: "TechJest",
     url: siteUrl,
     logo: `${siteUrl}/images/techjest-brand.png`,
+    image: `${siteUrl}/images/techjest-brand.png`,
     email: "techjest1@gmail.com",
     description: "TechJest is a software development company that builds websites, web applications, mobile apps, AI/ML solutions, cloud infrastructure, and user-focused digital products for startups and growing businesses.",
     slogan: "Practical technology for ambitious teams.",
+    brand: { "@type": "Brand", name: "TechJest", logo: `${siteUrl}/images/techjest-brand.png` },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "sales",

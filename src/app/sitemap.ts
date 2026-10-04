@@ -1,9 +1,22 @@
 import type { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-url";
 
-const routes = ["", "/services", "/portfolio", "/about", "/contact"];
+const routes = [
+  "",
+  "/services",
+  "/services/web-development",
+  "/services/mobile-app-development",
+  "/services/ai-ml-solutions",
+  "/services/cloud-devops",
+  "/services/ui-ux-design",
+  "/services/it-consulting-support",
+  "/portfolio",
+  "/about",
+  "/contact",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const baseUrl = getSiteUrl();
   return routes.map((route) => ({
     url: `${baseUrl}${route}`,
     changeFrequency: route === "" ? "weekly" : "monthly",

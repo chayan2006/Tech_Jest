@@ -2,6 +2,19 @@ import Link from "next/link";
 import { LogoModel } from "@/frontend/components/logo-model";
 import Image from "next/image";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
+import type { Metadata } from "next";
+import { getSiteUrl } from "@/lib/site-url";
+
+export const metadata: Metadata = {
+  title: "TechJest | Official Software Development Company",
+  description: "TechJest is an Indian software development company building websites, web apps, mobile apps, AI/ML solutions, cloud infrastructure, and digital products for growing businesses.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "TechJest | Official Software Development Company",
+    description: "TechJest builds practical websites, web apps, mobile apps, AI/ML solutions, and cloud infrastructure for growing businesses.",
+    url: "/",
+  },
+};
 
 const services = [
   ["Web development", "web-development", "Marketing sites, web apps, and e-commerce that stay fast and maintainable."],
@@ -30,6 +43,17 @@ export default async function Home() { const settings = await getSiteSettings();
       name: question,
       acceptedAnswer: { "@type": "Answer", text: answer },
     })),
+  }) }} />
+  <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${getSiteUrl()}/#webpage`,
+    name: "TechJest | Official Software Development Company",
+    url: getSiteUrl(),
+    isPartOf: { "@id": `${getSiteUrl()}/#website` },
+    about: { "@id": `${getSiteUrl()}/#organization` },
+    description: "Official website of TechJest, an Indian software development company for growing businesses.",
+    inLanguage: "en-IN",
   }) }} />
   <section className="hero"><div className="container hero-grid"><div><div className="eyebrow">{settings.homepage_eyebrow}</div><h1>{settings.homepage_title}</h1><p className="lead">{settings.homepage_description}</p><div className="hero-actions"><Link className="btn btn-primary" href="/contact">{settings.homepage_cta}</Link><Link className="btn btn-ghost" href="/portfolio">See our work</Link></div><div className="trust"><span className="dot"/> Replies within one business day</div></div><LogoModel /></div></section>
   <section className="section"><div className="container detail-grid"><div><div className="eyebrow">TechJest</div><h2>Software development for ambitious businesses.</h2></div><div><p className="lead">TechJest designs and builds websites, web applications, mobile apps, AI/ML solutions, cloud infrastructure, and user-focused digital products.</p><p>Founded and led by <strong>Chayan Khatua</strong> and <strong>Amit Shing Panwar</strong>, TechJest gives startups and growing teams a clear technical partner from the first idea through launch and ongoing improvement.</p><p><Link className="card-link" href="/about">Meet the founders and leadership team →</Link></p></div></div></section>
