@@ -7,7 +7,8 @@ import { ProfileBadge } from "@/frontend/components/profile-badge";
 import { createClient } from "@/backend/supabase/server";
 import { CartLink } from "@/frontend/components/service-cart";
 import { MessageNotification } from "@/frontend/components/message-notification";
-import { getSiteUrl } from "@/lib/site-url";
+import { defaultOgImage, getSiteUrl } from "@/lib/site-url";
+import { getSiteSettings, whatsappLink } from "@/backend/supabase/site-settings";
 
 const siteUrl = getSiteUrl();
 export const metadata: Metadata = {
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     title: "TechJest | Software Development Company for Growing Businesses",
     description: "Practical software engineering for startups and growing teams, led by Founders and CEOs Chayan Khatua and Amit Shing Panwar.",
     url: "/",
-    images: [{ url: "/images/techjest-brand.png", width: 138, height: 92, alt: "TechJest software development company logo" }],
+    images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
@@ -65,6 +66,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     ? user.user_metadata.full_name
     : typeof user?.user_metadata?.name === "string" ? user.user_metadata.name : undefined;
   const avatarUrl = typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : undefined;
+  const isAdmin = user?.app_metadata?.role === "admin";
+  const settings = await getSiteSettings();
+  const contactEmail = settings.contact_email;
+  const whatsappHref = whatsappLink(settings.whatsapp_number);
+  const whatsappChatHref = whatsappLink(settings.whatsapp_number, "Hi TechJest, I'd like to discuss a project.");
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -74,14 +80,14 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     url: siteUrl,
     logo: `${siteUrl}/images/techjest-brand.png`,
     image: `${siteUrl}/images/techjest-brand.png`,
-    email: "techjest1@gmail.com",
+    email: contactEmail,
     description: "TechJest is a software development company that builds websites, web applications, mobile apps, AI/ML solutions, cloud infrastructure, and user-focused digital products for startups and growing businesses.",
     slogan: "Practical technology for ambitious teams.",
     brand: { "@type": "Brand", name: "TechJest", logo: `${siteUrl}/images/techjest-brand.png` },
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "sales",
-      email: "techjest1@gmail.com",
+      email: contactEmail,
       availableLanguage: ["English"],
     },
     founder: [
@@ -136,16 +142,16 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <header className="site-header"><div className="container nav">
       <div className="nav-left"><Link className="logo" href="/"><Image className="brand-image" src="/images/techjest-brand.png" alt="TechJest" width={138} height={92} /></Link>{user && <ProfileBadge email={user.email} name={profileName} avatarUrl={avatarUrl} />}</div>
       <nav className="nav-links" aria-label="Main navigation">{nav.filter(([, href]) => href !== "/auth" || !user).map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</nav>
-      <div className="nav-actions">{user && <MessageNotification userId={user.id} admin={user.app_metadata?.role === "admin"} />}<CartLink /><Link className="btn btn-primary" href="/contact">Book a consultation</Link><MobileMenu /></div>
+      <div className="nav-actions">{user && <MessageNotification userId={user.id} admin={isAdmin} />}<CartLink /><Link className="btn btn-primary" href="/contact">Book a consultation</Link><MobileMenu signedIn={Boolean(user)} admin={isAdmin} /></div>
     </div></header>
     <main id="main">{children}</main>
     <footer className="footer"><div className="container">
       <div className="footer-grid"><div><Link className="logo" href="/"><Image className="brand-image footer-brand" src="/images/techjest-brand.png" alt="TechJest" width={138} height={92} /></Link><p>Practical technology for ambitious teams. Built with clarity, shipped with care.</p></div>
       <div><h4>Explore</h4><p><Link href="/services">Services</Link><br/><Link href="/portfolio">Our work</Link><br/><Link href="/about">About us</Link></p></div>
-      <div><h4>Start a project</h4><p><Link href="/contact">Book a consultation</Link><br/><a href="mailto:techjest1@gmail.com">techjest1@gmail.com</a><br/><a href="https://wa.me/919999999999">WhatsApp</a></p></div>
+      <div><h4>Start a project</h4><p><Link href="/contact">Book a consultation</Link><br/><a href={`mailto:${contactEmail}`}>{contactEmail}</a>{whatsappHref && <><br/><a href={whatsappHref}>WhatsApp</a></>}</p></div>
       <div><h4>Principles</h4><p>Clear scope<br/>Useful software<br/>Long-term thinking</p></div></div>
       <div className="footer-bottom">© {new Date().getFullYear()} TechJest. Built for what’s next.</div>
     </div></footer>
-    <a className="whatsapp" href="https://wa.me/919999999999?text=Hi%20TechJest%2C%20I%27d%20like%20to%20discuss%20a%20project." aria-label="Chat with us on WhatsApp">wa</a>
+    {whatsappChatHref && <a className="whatsapp" href={whatsappChatHref} aria-label="Chat with us on WhatsApp">wa</a>}
   </body></html>;
 }

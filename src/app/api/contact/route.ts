@@ -1,6 +1,7 @@
 import { createClient } from "@/backend/supabase/server";
 import { NextResponse } from "next/server";
 import { getServices } from "@/backend/supabase/services";
+import { findServiceArea, notSureService } from "@/frontend/data/service-areas";
 
 type ContactBody = {
   service?: unknown;
@@ -28,22 +29,24 @@ export async function POST(request: Request) {
   const requestedSlugs = Array.isArray(body.serviceSlugs)
     ? [...new Set(body.serviceSlugs.filter((slug): slug is string => typeof slug === "string").map(slug => slug.trim()).filter(Boolean))]
     : [];
-  if (!services.length && (requestedSlugs.length > 0 || typeof body.service === "string")) {
+  const requestedService = typeof body.service === "string" ? body.service.trim() : "";
+  const matchingArea = findServiceArea(requestedService);
+  const notSure = requestedService.toLowerCase() === notSureService.toLowerCase();
+  if (!services.length && (requestedSlugs.length > 0 || (requestedService && !matchingArea && !notSure))) {
     return NextResponse.json({ error: "The service catalog is temporarily unavailable. Please try again shortly." }, { status: 503 });
   }
   const selectedServices = requestedSlugs.map(slug => services.find(item => item.slug === slug)).filter((item): item is (typeof services)[number] => Boolean(item));
   if (requestedSlugs.length !== selectedServices.length) return NextResponse.json({ error: "One or more selected services are invalid." }, { status: 400 });
-  const requestedService = typeof body.service === "string" ? body.service.trim() : "";
   const matchingService = services.find(item =>
     item.name.toLowerCase() === requestedService.toLowerCase()
     || item.category.toLowerCase() === requestedService.toLowerCase()
   );
-  if (!selectedServices.length && requestedService && requestedService.toLowerCase() !== "not sure yet" && !matchingService) {
+  if (!selectedServices.length && requestedService && !notSure && !matchingArea && !matchingService) {
     return NextResponse.json({ error: "Please select an available service." }, { status: 400 });
   }
   const service = selectedServices.length
     ? selectedServices.map(item => item.name).join(", ")
-    : matchingService?.category ?? requestedService;
+    : matchingArea?.title ?? matchingService?.category ?? requestedService;
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const budget = typeof body.budget === "string" ? body.budget.trim() : "";
   const name = typeof body.name === "string" ? body.name.trim() : "";

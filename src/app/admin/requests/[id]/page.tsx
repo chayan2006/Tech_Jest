@@ -6,6 +6,7 @@ import { AdminRequestStatus } from "@/frontend/components/admin-request-status";
 import { AdminLeadStage, leadStages } from "@/frontend/components/admin-lead-stage";
 import { AdminProposalForm } from "@/frontend/components/admin-proposal-form";
 import { AdminRequestActions } from "@/frontend/components/admin-request-actions";
+import { AdminProjectForm } from "@/frontend/components/admin-project-form";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,7 +19,11 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
     const detail = error?.message ?? "This request no longer exists.";
     return <AdminShell email={user.email}><div className="admin-title"><div><div className="eyebrow">Request detail</div><h1>Request unavailable.</h1><p className="lead">{detail}</p></div><Link className="btn btn-ghost" href="/admin/notifications">Back to notifications</Link></div><section className="admin-panel"><p className="admin-message">The notification may point to a deleted request, or the current Supabase schema/policy may not allow this admin account to read it.</p></section></AdminShell>;
   }
-  const { data: selectedServices, error: selectedServicesError } = await supabase.from("project_request_services").select("service_name_snapshot, price_snapshot").eq("request_id", id);
+  const [{ data: selectedServices, error: selectedServicesError }, { data: linkedProjects }, { data: latestProposal }] = await Promise.all([
+    supabase.from("project_request_services").select("service_name_snapshot, price_snapshot").eq("request_id", id),
+    supabase.from("projects").select("id, name, status").eq("request_id", id).order("created_at", { ascending: false }),
+    supabase.from("proposals").select("id").eq("request_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+  ]);
   return <AdminShell email={user.email}>
     <div className="admin-title"><div><div className="eyebrow">Request detail</div><h1>{request.name ?? "Consultation request"}</h1><p className="lead">{request.service}</p></div><Link className="btn btn-ghost" href="/admin/crm">Back to CRM</Link></div>
     <div className="admin-detail-grid">
@@ -30,5 +35,6 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
     <section className="admin-panel admin-detail-services"><div className="admin-panel-head"><div><h2>Request actions</h2><p>Accept, decline, restore, complete, or permanently remove this request.</p></div></div><AdminRequestActions requestId={request.id} initialStatus={request.status} /></section>
     <section className="admin-panel admin-detail-services"><div className="admin-panel-head"><div><h2>Selected services</h2><p>Historical snapshots from the quote request.</p></div></div>{selectedServicesError ? <p className="admin-message">Could not load service snapshots: {selectedServicesError.message}</p> : selectedServices?.length ? <div className="admin-mini-list">{selectedServices.map((service, index) => <div className="admin-mini-row" key={`${service.service_name_snapshot}-${index}`}><strong>{service.service_name_snapshot}</strong><span>{service.price_snapshot ? `From ₹${Number(service.price_snapshot).toLocaleString("en-IN")}` : "Custom quote"}</span></div>)}</div> : <p className="admin-message">No service snapshots are available for this request.</p>}</section>
     <section className="admin-panel admin-detail-services"><div className="admin-panel-head"><div><h2>Create proposal</h2><p>Turn the qualified request into a clear commercial offer.</p></div></div><AdminProposalForm requestId={request.id} defaultTitle={request.service} /></section>
+    <section className="admin-panel admin-detail-services"><div className="admin-panel-head"><div><h2>Start a project</h2><p>Create the delivery workspace this client sees in their dashboard.</p></div></div>{linkedProjects?.length ? <div className="admin-mini-list">{linkedProjects.map(project => <Link className="admin-mini-row" href={`/admin/projects/${project.id}`} key={project.id}><strong>{project.name}</strong><span>{project.status.replace("_", " ")}</span></Link>)}</div> : null}<AdminProjectForm requestId={request.id} proposalId={latestProposal?.id} defaultName={request.service} /></section>
   </AdminShell>;
 }

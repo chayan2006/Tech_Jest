@@ -23,7 +23,7 @@ export function AdminSiteSettings({ settings }: { settings: Setting[] }) {
       return;
     }
     const { error } = await supabase.from("site_settings").upsert(
-      settings.map(setting => ({ key: setting.key, value: values[setting.key]?.trim() ?? "", updated_by: user.id })),
+      settings.map(setting => ({ key: setting.key, value: values[setting.key]?.trim() ?? "", updated_by: user.id, updated_at: new Date().toISOString() })),
       { onConflict: "key" },
     );
     setMessage(error ? "Could not save settings. Confirm the latest schema is applied." : "Website settings saved.");

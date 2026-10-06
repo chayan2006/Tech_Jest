@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/backend/supabase/server";
+import { countUnreadMessages } from "@/backend/supabase/unread";
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -23,7 +24,7 @@ export default async function Dashboard() {
     profile = createdProfile;
   }
   const { data: requests } = await supabase.from("project_requests").select("id, service, message, budget, status, created_at").order("created_at", { ascending: false });
-  const { count: unreadMessageCount } = await supabase.from("messages").select("id", { count: "exact", head: true }).eq("sender_type", "admin");
+  const unreadMessageCount = await countUnreadMessages(supabase, user.id, false);
   const requestIds = requests?.map(request => request.id) ?? [];
   const { data: projects } = requestIds.length ? await supabase.from("projects").select("id, request_id, name, status, start_date, target_date").in("request_id", requestIds).order("created_at", { ascending: false }) : { data: [] };
   const { data: tasks } = projects?.length ? await supabase.from("project_tasks").select("project_id, title, status, due_date").in("project_id", projects.map(project => project.id)).order("created_at", { ascending: true }) : { data: [] };

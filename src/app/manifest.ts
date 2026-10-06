@@ -10,6 +10,6 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "browser",
     background_color: "#0b0d12",
     theme_color: "#0b0d12",
-    icons: [{ src: "/images/techjest-brand.png", sizes: "138x92", type: "image/png" }],
+    icons: [{ src: "/images/techjest-brand.png", sizes: "1152x768", type: "image/png" }],
   };
 }

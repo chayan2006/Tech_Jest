@@ -47,6 +47,8 @@ Authentication uses Supabase Auth and project history uses a protected PostgreSQ
    The latest schema also adds an additive `lead_stage` field for the protected admin CRM pipeline, request-linked `proposals` and `projects` tables for commercial and delivery tracking, `project_tasks` for delivery work, private project collaboration metadata, and invoice records. The policy statements are safe to rerun when updating an existing project.
    For a clean rebuild of the public database, run [`backend/supabase/reset-database.sql`](./backend/supabase/reset-database.sql) first. This is destructive and removes all public application data, but not Auth users. Then run [`backend/supabase/schema.sql`](./backend/supabase/schema.sql), followed by [`backend/supabase/seed-services-catalog.sql`](./backend/supabase/seed-services-catalog.sql). The schema includes the required Supabase API role grants; do not skip the schema step.
    A lightweight `/api/health` endpoint reports whether the required public Supabase configuration is present; it never returns secret values.
+   Existing databases also need the dated files in [`backend/supabase/migrations/`](./backend/supabase/migrations/), run in name order (both are safe to rerun). They restore the `site_settings` table behind **Admin → Website settings**, fix client read receipts and conversation status, harden signup, and create the private `project-documents` storage bucket for project files.
+   Set the public WhatsApp number in **Admin → Website settings**; WhatsApp links stay hidden until a real number is saved.
 
 ### Admin access
 

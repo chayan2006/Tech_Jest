@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getServices } from "@/backend/supabase/services";
 import { AddToCartButton } from "@/frontend/components/service-cart";
-import { getSiteUrl } from "@/lib/site-url";
+import { defaultOgImage, getSiteUrl } from "@/lib/site-url";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     title: `${service.title} Services`,
     description: `${service.intro} Explore TechJest ${service.title.toLowerCase()} services, deliverables, and project options.`,
     alternates: { canonical: `/services/${slug}` },
-    openGraph: { title: `TechJest ${service.title} Services`, description: service.intro, url: `/services/${slug}` },
+    openGraph: { title: `TechJest ${service.title} Services`, description: service.intro, url: `/services/${slug}`, images: [defaultOgImage] },
     keywords: [service.title, "TechJest", "software development", ...(catalogService?.technologies ?? [])],
   };
 }
@@ -48,6 +48,8 @@ export default async function Service({ params }: { params: Promise<{ slug: stri
   if (!service) notFound();
   const siteUrl = getSiteUrl();
   const serviceUrl = `${siteUrl}/services/${slug}`;
+  // Broad service areas have no cart item, so they go straight to the contact form.
+  const contactHref = `/contact?service=${encodeURIComponent(slug)}`;
   const relatedServices = catalogService
     ? services.filter((item) => item.category === catalogService.category && item.slug !== catalogService.slug).slice(0, 3)
     : [];
@@ -75,9 +77,9 @@ export default async function Service({ params }: { params: Promise<{ slug: stri
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
-    <section className="page-hero"><div className="container service-detail-hero"><div className="eyebrow"><Link href="/services">Services</Link> / {service.title}</div><h1>{service.title}</h1><p className="lead">{service.intro}</p>{catalogService && <div className="service-detail-price"><strong>{catalogService.price ? `From ₹${catalogService.price.toLocaleString("en-IN")}` : "Custom quote"}</strong><span>⏱ {catalogService.delivery}</span></div>}<div className="hero-actions">{catalogService && <AddToCartButton service={catalogService} />}<Link className="btn btn-ghost" href="/cart#quote">Request a quote</Link></div></div></section>
+    <section className="page-hero"><div className="container service-detail-hero"><div className="eyebrow"><Link href="/services">Services</Link> / {service.title}</div><h1>{service.title}</h1><p className="lead">{service.intro}</p>{catalogService && <div className="service-detail-price"><strong>{catalogService.price ? `From ₹${catalogService.price.toLocaleString("en-IN")}` : "Custom quote"}</strong><span>⏱ {catalogService.delivery}</span></div>}<div className="hero-actions">{catalogService ? <><AddToCartButton service={catalogService} /><Link className="btn btn-ghost" href="/cart#quote">Request a quote</Link></> : <Link className="btn btn-primary" href={contactHref}>Start a project</Link>}</div></div></section>
     <section className="section"><div className="container detail-grid"><div><div className="eyebrow">What changes</div><h2>Useful from the first release.</h2><div className="list">{service.benefits.map((item, index) => <div className="list-item" key={item}><strong>0{index + 1}</strong><p>{item}</p></div>)}</div></div><div><div className="eyebrow">What you receive</div><h2>Concrete deliverables.</h2><div className="list">{service.deliverables.map((item) => <div className="list-item" key={item}><strong>✓</strong><p>{item}</p></div>)}</div>{catalogService && <><div className="eyebrow detail-tech-eyebrow">Technologies</div><p>{catalogService.technologies.join(" · ")}</p></>}</div></div></section>
     {relatedServices.length > 0 && <section className="section related-services"><div className="container"><div className="section-head"><div><div className="eyebrow">Build the full solution</div><h2>Related {catalogService?.category} services.</h2></div><Link className="card-link" href="/services">Browse all services</Link></div><div className="service-grid">{relatedServices.map((item) => <article className="service-card" key={item.slug}><div className="eyebrow">{item.category}</div><h3>{item.name}</h3><p>{item.description}</p><Link className="card-link" href={`/services/${item.slug}`}>View details →</Link></article>)}</div></div></section>}
-    <section className="cta"><div className="container cta-row"><div><div className="eyebrow">Ready when you are</div><h2>Let’s talk about {service.title.toLowerCase()}.</h2></div><Link className="btn btn-primary" href="/cart#quote">Build your project package</Link></div></section>
+    <section className="cta"><div className="container cta-row"><div><div className="eyebrow">Ready when you are</div><h2>Let’s talk about {service.title.toLowerCase()}.</h2></div>{catalogService ? <Link className="btn btn-primary" href="/cart#quote">Build your project package</Link> : <Link className="btn btn-primary" href={contactHref}>Start a project</Link>}</div></section>
   </>;
 }

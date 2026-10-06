@@ -3,7 +3,7 @@ import { LogoModel } from "@/frontend/components/logo-model";
 import Image from "next/image";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
 import type { Metadata } from "next";
-import { getSiteUrl } from "@/lib/site-url";
+import { defaultOgImage, getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
   title: "TechJest | Official Software Development Company",
@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     title: "TechJest | Official Software Development Company",
     description: "TechJest builds practical websites, web apps, mobile apps, AI/ML solutions, and cloud infrastructure for growing businesses.",
     url: "/",
+    images: [defaultOgImage],
   },
 };
 

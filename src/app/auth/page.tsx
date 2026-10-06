@@ -3,11 +3,17 @@
 import { FormEvent, useState } from "react";
 import { useEffect } from "react";
 import { createClient } from "@/backend/supabase/client";
+import { safeNextPath } from "@/lib/safe-next-path";
 
 type Mode = "login" | "signup";
 
-function safeNextPath(value: string | null) {
-  return value?.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+function requestedNextPath() {
+  return safeNextPath(new URLSearchParams(window.location.search).get("next"));
+}
+
+function callbackUrl() {
+  // Slashes stay readable so the default stays exactly "?next=/dashboard" for Supabase's redirect allow-list.
+  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(requestedNextPath()).replace(/%2F/gi, "/")}`;
 }
 
 function getLoginDestination(user: unknown, next: string | null) {
@@ -58,7 +64,7 @@ export default function AuthPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          emailRedirectTo: callbackUrl(),
           data: { full_name: fullName.trim(), company: company.trim(), phone: phone.trim(), purpose: purpose.trim() },
         },
       });
@@ -87,7 +93,7 @@ export default function AuthPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
+      options: { redirectTo: callbackUrl() },
     });
     if (error) {
       setBusy(false);
@@ -107,10 +113,10 @@ export default function AuthPage() {
     {mode === "login" && <><button className="btn btn-google" type="button" onClick={signInWithGoogle} disabled={busy}><span aria-hidden="true">G</span> Continue with Google</button><div className="auth-divider"><span>or use email</span></div></>}
     <form className="form auth-form" onSubmit={submit}>
       {mode === "signup" && <div className="auth-fields">
-        <div className="field"><label htmlFor="full-name">Full name</label><input id="full-name" value={fullName} onChange={event=>setFullName(event.target.value)} required minLength={2} autoComplete="name" /></div>
-        <div className="field"><label htmlFor="company">Company <small>(optional)</small></label><input id="company" value={company} onChange={event=>setCompany(event.target.value)} autoComplete="organization" /></div>
-        <div className="field"><label htmlFor="phone">Phone <small>(optional)</small></label><input id="phone" type="tel" value={phone} onChange={event=>setPhone(event.target.value)} autoComplete="tel" /></div>
-        <div className="field"><label htmlFor="purpose">What do you want to build?</label><textarea id="purpose" value={purpose} onChange={event=>setPurpose(event.target.value)} required minLength={3} rows={3} /></div>
+        <div className="field"><label htmlFor="full-name">Full name</label><input id="full-name" value={fullName} onChange={event=>setFullName(event.target.value)} required minLength={2} maxLength={100} autoComplete="name" /></div>
+        <div className="field"><label htmlFor="company">Company <small>(optional)</small></label><input id="company" value={company} onChange={event=>setCompany(event.target.value)} minLength={2} maxLength={120} autoComplete="organization" /></div>
+        <div className="field"><label htmlFor="phone">Phone <small>(optional)</small></label><input id="phone" type="tel" value={phone} onChange={event=>setPhone(event.target.value)} maxLength={30} autoComplete="tel" /></div>
+        <div className="field"><label htmlFor="purpose">What do you want to build?</label><textarea id="purpose" value={purpose} onChange={event=>setPurpose(event.target.value)} required minLength={3} maxLength={500} rows={3} aria-describedby="purpose-help" /><small id="purpose-help">Up to 500 characters — you can share more detail in your project request.</small></div>
       </div>}
       <div className="field"><label htmlFor="auth-email">Email</label><input id="auth-email" type="email" value={email} onChange={event=>setEmail(event.target.value)} required autoComplete="email" /></div>
       <div className="field"><label htmlFor="auth-password">Password</label><input id="auth-password" type="password" value={password} onChange={event=>setPassword(event.target.value)} required minLength={8} autoComplete={mode === "login" ? "current-password" : "new-password"} /><small>At least 8 characters.</small></div>
