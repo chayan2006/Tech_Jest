@@ -167,11 +167,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     description: "Official website of TechJest, led by Founders and CEOs Chayan Khatua and Amit Singh Panwar.",
     about: { "@id": `${siteUrl}/#organization` },
     keywords: "software development, web development, mobile apps, AI, cloud, DevOps, UI/UX design, IT consulting",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: `${siteUrl}/services?query={search_term_string}`,
-      "query-input": "required name=search_term_string",
-    },
   };
   // The intro script sets data-intro on <html> before hydration, hence suppressHydrationWarning.
   return (
@@ -235,6 +230,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                   <Link href="/portfolio">Our work</Link>
                   <br />
                   <Link href="/about">About us</Link>
+                  <br />
+                  <Link href="/privacy">Privacy policy</Link>
+                  <br />
+                  <Link href="/terms">Terms of service</Link>
                 </p>
               </div>
               <div>
