@@ -134,7 +134,7 @@ export default async function Home() {
               infrastructure, and user-focused digital products.
             </p>
             <p>
-              Founded and led by <strong>Chayan Khatua</strong> and <strong>Amit Shing Panwar</strong>, TechJest gives
+              Founded and led by <strong>Chayan Khatua</strong> and <strong>Amit Singh Panwar</strong>, TechJest gives
               startups and growing teams a clear technical partner from the first idea through launch and ongoing
               improvement.
             </p>

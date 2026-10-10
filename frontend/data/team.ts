@@ -6,6 +6,8 @@ export type TeamMember = {
   linkedin: string;
   github?: string;
   founder?: boolean;
+  // Square portrait in public/images/team/, shown round on the About page.
+  photo?: string;
 };
 
 export const team: readonly TeamMember[] = [
@@ -18,8 +20,8 @@ export const team: readonly TeamMember[] = [
     github: "https://github.com/chayan2006",
   },
   {
-    id: "amit-shing-panwar",
-    name: "Amit Shing Panwar",
+    id: "amit-singh-panwar",
+    name: "Amit Singh Panwar",
     role: "Founder / CEO",
     founder: true,
     linkedin: "https://www.linkedin.com/in/amit-singh-panwar-917b16379/",

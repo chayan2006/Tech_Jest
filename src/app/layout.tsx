@@ -26,6 +26,7 @@ const person = (member: TeamMember) => ({
   "@type": "Person",
   "@id": `${siteUrl}/about#${member.id}`,
   name: member.name,
+  ...(member.photo ? { image: `${siteUrl}${member.photo}` } : {}),
   sameAs: member.github ? [member.linkedin, member.github] : [member.linkedin],
 });
 export const viewport: Viewport = { themeColor: "#1b1e4a" };
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
   referrer: "origin-when-cross-origin",
   formatDetection: { email: false, address: false, telephone: false },
   authors: founders.map((member) => ({ name: member.name, url: member.linkedin })),
-  creator: "Chayan Khatua and Amit Shing Panwar",
+  creator: "Chayan Khatua and Amit Singh Panwar",
   publisher: "TechJest",
   alternates: { canonical: "/" },
   openGraph: {
@@ -58,7 +59,7 @@ export const metadata: Metadata = {
     siteName: "TechJest",
     title: "TechJest | Software Development Company for Growing Businesses",
     description:
-      "Practical software engineering for startups and growing teams, led by Founders and CEOs Chayan Khatua and Amit Shing Panwar.",
+      "Practical software engineering for startups and growing teams, led by Founders and CEOs Chayan Khatua and Amit Singh Panwar.",
     url: "/",
   },
   twitter: {
@@ -163,7 +164,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     url: siteUrl,
     publisher: { "@id": `${siteUrl}/#organization` },
     inLanguage: "en-IN",
-    description: "Official website of TechJest, led by Founders and CEOs Chayan Khatua and Amit Shing Panwar.",
+    description: "Official website of TechJest, led by Founders and CEOs Chayan Khatua and Amit Singh Panwar.",
     about: { "@id": `${siteUrl}/#organization` },
     keywords: "software development, web development, mobile apps, AI, cloud, DevOps, UI/UX design, IT consulting",
     potentialAction: {

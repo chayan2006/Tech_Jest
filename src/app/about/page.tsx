@@ -6,7 +6,7 @@ import { LinkedInIcon } from "@/frontend/components/icons";
 export const metadata: Metadata = {
   title: "About TechJest and Our Founders",
   description:
-    "Meet the TechJest team: Founders and CEOs Chayan Khatua and Amit Shing Panwar, CTO Arushi Choudhary, CFO Sindhant Dadwal, CPO Nishtha Banerjee, CMO Nayan Roy, and Chitwandeep Kaur.",
+    "Meet the TechJest team: Founders and CEOs Chayan Khatua and Amit Singh Panwar, CTO Arushi Choudhary, CFO Sindhant Dadwal, CPO Nishtha Banerjee, CMO Nayan Roy, and Chitwandeep Kaur.",
   alternates: { canonical: "/about" },
 };
 
@@ -30,7 +30,7 @@ export default function About() {
           <div className="eyebrow">About TechJest</div>
           <h1>Good technology should make work feel lighter.</h1>
           <p className="lead">
-            TechJest is a software development company led by Founders and CEOs Chayan Khatua and Amit Shing Panwar. We
+            TechJest is a software development company led by Founders and CEOs Chayan Khatua and Amit Singh Panwar. We
             build practical digital products for startups and growing businesses.
           </p>
         </div>
