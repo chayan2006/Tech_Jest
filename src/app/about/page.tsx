@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { getSiteUrl } from "@/lib/site-url";
 import { team } from "@/frontend/data/team";
 import { LinkedInIcon } from "@/frontend/components/icons";
@@ -48,18 +49,31 @@ export default function About() {
             </p>
             <div className="process-grid leadership-grid">
               {team.map((member) => (
-                <div className="process-step" id={member.id} key={member.id}>
-                  <h3>{member.name}</h3>
-                  <p>{member.role}</p>
-                  <a
-                    className="profile-link"
-                    href={member.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${member.name} on LinkedIn`}
-                  >
-                    <LinkedInIcon /> LinkedIn
-                  </a>
+                <div className="process-step leader-card" id={member.id} key={member.id}>
+                  {member.photo ? (
+                    <Image className="leader-photo" src={member.photo} alt="" width={80} height={80} />
+                  ) : (
+                    <span className="leader-photo leader-initials" aria-hidden="true">
+                      {member.name
+                        .split(" ")
+                        .map((part) => part[0])
+                        .slice(0, 2)
+                        .join("")}
+                    </span>
+                  )}
+                  <div>
+                    <h3>{member.name}</h3>
+                    <p>{member.role}</p>
+                    <a
+                      className="profile-link"
+                      href={member.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${member.name} on LinkedIn`}
+                    >
+                      <LinkedInIcon /> LinkedIn
+                    </a>
+                  </div>
                 </div>
               ))}
             </div>
