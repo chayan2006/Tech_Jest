@@ -9,15 +9,17 @@ export const dynamic = "force-dynamic";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
   const services = await getServices();
-  const routes = [...new Set([
-    "",
-    "/services",
-    ...serviceAreas.map((area) => `/services/${area.slug}`),
-    ...services.map((service) => `/services/${service.slug}`),
-    "/portfolio",
-    "/about",
-    "/contact",
-  ])];
+  const routes = [
+    ...new Set([
+      "",
+      "/services",
+      ...serviceAreas.map((area) => `/services/${area.slug}`),
+      ...services.map((service) => `/services/${service.slug}`),
+      "/portfolio",
+      "/about",
+      "/contact",
+    ]),
+  ];
   return routes.map((route) => ({
     url: `${baseUrl}${route}`,
     changeFrequency: route === "" ? "weekly" : "monthly",

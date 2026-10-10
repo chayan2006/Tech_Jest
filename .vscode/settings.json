@@ -1,8 +1,0 @@
-{
-    "chat.tools.terminal.autoApprove": {
-        "/^/usr/local/bin/python3 - <<'PY'\nfrom PIL import Image\nfrom pathlib import Path\nsrc = Path\\('public/images/techjest-logo\\.png'\\)\nout = Path\\('public/images/techjest-logo-transparent\\.png'\\)\nim = Image\\.open\\(src\\)\\.convert\\('RGBA'\\)\np = im\\.load\\(\\)\nfor y in range\\(im\\.height\\):\n    for x in range\\(im\\.width\\):\n        r, g, b, a = p\\[x, y\\]\n        brightness = max\\(r, g, b\\)\n        # Remove the dark photographic background while retaining the bright logo\\.\n        if brightness < 42:\n            p\\[x, y\\] = \\(r, g, b, 0\\)\n        elif brightness < 92:\n            alpha = int\\(\\(brightness - 42\\) \\* 255 / 50\\)\n            p\\[x, y\\] = \\(r, g, b, min\\(a, alpha\\)\\)\nim\\.save\\(out, optimize=True\\)\nprint\\(out, im\\.size\\)\nPY\nmv public/images/techjest-logo-transparent\\.png public/images/techjest-logo\\.png\nfile public/images/techjest-logo\\.png$/": {
-            "approve": true,
-            "matchCommandLine": true
-        }
-    }
-}

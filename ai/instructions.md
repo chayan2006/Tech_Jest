@@ -4,7 +4,6 @@
 
 - Treat the repository as the source of truth for current behavior. Inspect the relevant source, schema, configuration, and documentation before proposing or making a change.
 - This file records observed conventions and cautious recommendations separately. Observed conventions are labeled **Existing convention**; recommendations are labeled **Recommended**.
-- Do not treat `docs/PROGRESS.md` as a description of the current implementation without checking the code. That document contains earlier planning assumptions that do not fully match the current package and routes.
 
 ## Architecture constraints
 
@@ -18,6 +17,9 @@
 - Server Components are used by default. Components using browser state, effects, or browser APIs are marked `"use client"`.
 - Server-side authenticated data access uses `backend/supabase/server.ts`; browser access uses `backend/supabase/client.ts`.
 - Admin pages use `backend/supabase/admin.ts` and `requireAdmin()`.
+- Code is formatted with Prettier (`npm run format`, print width 120). Run it before committing.
+- The visual design uses the CSS variables at the top of `src/app/globals.css` (Midnight Navy, Warm Stone Grey, Crimson Red). Reuse those tokens instead of new colours.
+- Team members are defined once in `frontend/data/team.ts`.
 
 ### Recommended rules
 
@@ -30,7 +32,7 @@
 
 - `backend/supabase/schema.sql`: defines tables, constraints, triggers, indexes, and Row Level Security policies. Changes can affect authentication, request submission, admin visibility, and existing data.
 - `backend/supabase/admin.ts`: admin authorization is based on `user.app_metadata.role === "admin"`. Do not replace this with user-controlled metadata.
-- `middleware.ts`, `backend/supabase/server.ts`, and `backend/supabase/client.ts`: session cookies and authentication refresh behavior depend on these boundaries.
+- `src/proxy.ts`, `backend/supabase/server.ts`, and `backend/supabase/client.ts`: session cookies and authentication refresh behavior depend on these boundaries.
 - `src/app/api/contact/route.ts`: authenticated request creation and input length validation live here.
 - `src/app/auth/page.tsx`, `src/app/auth/callback/route.ts`, and `src/app/admin/login/page.tsx`: login, signup, OAuth callback, admin authorization, and audit-event writes are handled here.
 - `src/app/admin/**`: reads and updates protected Supabase data and must continue to work with the RLS policies.
@@ -56,6 +58,7 @@
   - `npm run start`
   - `npm run typecheck`
   - `npm run check` (`typecheck` followed by `build`)
+  - `npm run format` / `npm run format:check`
 - CI runs `npm ci` and `npm run check` on pull requests and pushes to `main`.
 - `npm run check` passed during the current inspection.
 

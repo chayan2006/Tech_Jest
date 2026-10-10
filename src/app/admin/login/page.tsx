@@ -25,23 +25,55 @@ export default function AdminLoginPage() {
     if (result.data.user.app_metadata?.role !== "admin") {
       await supabase.auth.signOut();
       setBusy(false);
-      setMessage("This account is a client account, not an admin account. Add role=admin to Supabase Auth user metadata, then sign in again.");
+      setMessage("This account does not have admin access. Clients can log in from the Login page.");
       return;
     }
 
-    await supabase.from("audit_logs").insert({ user_id: result.data.user.id, event: "admin_login", email: result.data.user.email });
+    await supabase
+      .from("audit_logs")
+      .insert({ user_id: result.data.user.id, event: "admin_login", email: result.data.user.email });
     window.location.assign("/admin");
   }
 
-  return <section className="page-hero"><div className="container auth-shell admin-login-page">
-    <div className="eyebrow">Restricted access</div>
-    <h1>Admin login.</h1>
-    <p className="lead">Sign in with an authorized TechJest administrator account.</p>
-    <form className="form auth-form" onSubmit={submit}>
-      <div className="field"><label htmlFor="admin-email">Admin email</label><input id="admin-email" type="email" value={email} onChange={event => setEmail(event.target.value)} required autoComplete="username" /></div>
-      <div className="field"><label htmlFor="admin-password">Password</label><input id="admin-password" type="password" value={password} onChange={event => setPassword(event.target.value)} required autoComplete="current-password" /></div>
-      {message && <p role="alert" className="form-message">{message}</p>}
-      <button className="btn btn-primary" disabled={busy}>{busy ? "Checking access…" : "Log in as admin"}</button>
-    </form>
-  </div></section>;
+  return (
+    <section className="auth-hero">
+      <div className="container auth-shell admin-login-page">
+        <div className="eyebrow">Restricted access</div>
+        <h1>Admin login.</h1>
+        <p className="lead">Sign in with an authorized TechJest administrator account.</p>
+        <form className="form auth-form" onSubmit={submit}>
+          <div className="field">
+            <label htmlFor="admin-email">Admin email</label>
+            <input
+              id="admin-email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              autoComplete="username"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="admin-password">Password</label>
+            <input
+              id="admin-password"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+              autoComplete="current-password"
+            />
+          </div>
+          {message && (
+            <p role="alert" className="form-message">
+              {message}
+            </p>
+          )}
+          <button className="btn btn-primary" disabled={busy}>
+            {busy ? "Checking access…" : "Log in as admin"}
+          </button>
+        </form>
+      </div>
+    </section>
+  );
 }

@@ -89,6 +89,9 @@ begin
 end;
 $$;
 
+-- Runs only as the signup trigger; it is not part of the public API.
+revoke execute on function public.handle_new_user() from public, anon, authenticated;
+
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
@@ -369,6 +372,7 @@ create policy "Admins can manage project messages" on public.project_messages fo
 drop policy if exists "Users can read and send project messages" on public.project_messages;
 create policy "Users can read and send project messages" on public.project_messages for select to authenticated
   using (exists (select 1 from public.projects join public.project_requests on project_requests.id = projects.request_id where projects.id = project_messages.project_id and project_requests.user_id = auth.uid()));
+drop policy if exists "Users can create project messages" on public.project_messages;
 create policy "Users can create project messages" on public.project_messages for insert to authenticated
   with check (auth.uid() = user_id and exists (select 1 from public.projects join public.project_requests on project_requests.id = projects.request_id where projects.id = project_messages.project_id and project_requests.user_id = auth.uid()));
 
@@ -621,6 +625,44 @@ insert into public.site_settings (key, value) values
   ('contact_email', 'techjest1@gmail.com'),
   ('whatsapp_number', '')
 on conflict (key) do nothing;
+
+-- Lookups behind client dashboards, RLS checks, and unread counts.
+create index if not exists projects_request_idx on public.projects (request_id);
+create index if not exists invoices_request_idx on public.invoices (request_id);
+create index if not exists conversation_participants_user_idx on public.conversation_participants (user_id);
+
+-- New messages reach open conversations instantly (the app also checks every 15 seconds).
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
+    and not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'messages'
+    ) then
+    alter publication supabase_realtime add table public.messages;
+  end if;
+end;
+$$;
+
+-- Private storage for project documents. The first folder of each file path is the project id.
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('project-documents', 'project-documents', false, 10485760)
+on conflict (id) do update set public = false, file_size_limit = excluded.file_size_limit;
+drop policy if exists "Admins manage project document files" on storage.objects;
+create policy "Admins manage project document files" on storage.objects for all to authenticated
+  using (bucket_id = 'project-documents' and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
+  with check (bucket_id = 'project-documents' and (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+drop policy if exists "Clients read their project document files" on storage.objects;
+create policy "Clients read their project document files" on storage.objects for select to authenticated
+  using (
+    bucket_id = 'project-documents'
+    and exists (
+      select 1 from public.projects
+      join public.project_requests on project_requests.id = projects.request_id
+      where projects.id::text = (storage.foldername(objects.name))[1]
+        and project_requests.user_id = auth.uid()
+    )
+  );
 
 -- The reset script recreates the public schema, so table privileges must be
 -- applied after all application tables exist. RLS policies still limit rows.

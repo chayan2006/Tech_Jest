@@ -7,7 +7,8 @@ export function AdminUserActions({ userId, name }: { userId: string; name: strin
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   async function removeUser() {
-    if (!window.confirm(`Remove ${name}'s profile, requests, conversations, and notifications? This cannot be undone.`)) return;
+    if (!window.confirm(`Remove ${name}'s profile, requests, conversations, and notifications? This cannot be undone.`))
+      return;
     setBusy(true);
     const response = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
     if (!response.ok) {
@@ -19,5 +20,9 @@ export function AdminUserActions({ userId, name }: { userId: string; name: strin
     router.refresh();
     setBusy(false);
   }
-  return <button type="button" className="request-delete" onClick={removeUser} disabled={busy}>{busy ? "Removing..." : "Remove data"}</button>;
+  return (
+    <button type="button" className="request-delete" onClick={removeUser} disabled={busy}>
+      {busy ? "Removing..." : "Remove data"}
+    </button>
+  );
 }

@@ -35,8 +35,7 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Current behavior:** Changing a service name, price, category, or slug requires a source change and deployment.
 - **Expected behavior:** Dynamic catalog management is **NOT VERIFIED** as a current requirement.
 - **Possible impact:** Slower content updates and potential mismatch between displayed service data and operational offerings.
-- **Status:** Open limitation documented by current architecture.
-- **Recommended next investigation/fix:** Decide whether a Supabase-backed catalog and admin editing workflow are warranted.
+- **Status:** **Resolved:** the catalog is read from the Supabase `service_catalog` table and edited in Admin → Services; `frontend/data/services.ts` remains only as a fallback.
 
 ## 4. Cart state is local to one browser/device
 
@@ -76,9 +75,9 @@ These items are documented only; no issue was fixed during this task. Severity r
 
 ## 7. Environment variables are asserted rather than validated at startup
 
-- **Issue:** Supabase URLs/keys are passed with non-null assertions in middleware and Supabase clients.
+- **Issue:** Supabase URLs/keys are passed with non-null assertions in the proxy and Supabase clients.
 - **Severity:** Medium
-- **Evidence:** `middleware.ts`, `backend/supabase/client.ts`, and `backend/supabase/server.ts` use `process.env...!`; `.env.example` leaves Supabase values blank.
+- **Evidence:** `src/proxy.ts`, `backend/supabase/client.ts`, and `backend/supabase/server.ts` use `process.env...!`; `.env.example` leaves Supabase values blank.
 - **Affected area:** Local startup, CI/build, and deployment reliability.
 - **Current behavior:** The repository does not provide a centralized runtime configuration validation layer.
 - **Expected behavior:** Required deployment values should be present; actual environment behavior is **NOT VERIFIED** without a target deployment.
@@ -107,8 +106,7 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Current behavior:** Multiple documents can give conflicting architecture signals.
 - **Expected behavior:** Current-state documentation should distinguish historical plans from implemented behavior.
 - **Possible impact:** Future changes may follow obsolete assumptions or install unnecessary dependencies.
-- **Status:** Open documentation debt; this task adds `ai/` current-state documentation without rewriting existing history.
-- **Recommended next investigation/fix:** Reconcile or archive obsolete planning material in a separate documentation task after owner approval.
+- **Status:** **Resolved:** the obsolete `docs/` planning files were removed at the owner's request (October 2026); `README.md` and these `ai/` notes describe the current implementation.
 
 ## 10. Automated validation does not cover browser, accessibility, security, or database integration behavior
 
@@ -205,3 +203,29 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Possible impact:** Other public content still requires a code change and deployment.
 - **Status:** Open next admin-CMS phase.
 - **Recommended next investigation/fix:** Add a service catalogue and content-management schema, migrate public reads to it, and add audited CRUD screens.
+
+## 18. Server functions ran far from the database
+
+- **Issue:** Production responses showed `x-vercel-id: bom1::iad1`, meaning functions ran in US East while Supabase is in Mumbai.
+- **Severity:** Medium (performance)
+- **Evidence:** 1.1–3.0 s time-to-first-byte on `/`, `/services`, `/about`, and `/contact` (October 2026).
+- **Status:** Fix prepared in `vercel.json` (`regions: ["bom1"]`); verify the header shows `bom1::bom1` after the next deploy.
+
+## 19. Enquiries require an account
+
+- **Issue:** `/api/contact` returns 401 for signed-out visitors, so the contact form and cart quote ask visitors to sign up first.
+- **Severity:** Medium (conversion)
+- **Status:** Product decision for the owner; email and WhatsApp remain the no-account routes.
+
+## 20. No email alert for new enquiries
+
+- **Issue:** New requests are only visible in the admin console; nobody is notified by email.
+- **Severity:** Medium
+- **Status:** Needs an email provider account (for example Resend) and a receiving inbox from the owner.
+
+## 21. Instant message updates are off in production
+
+- **Issue:** The live database has no tables in the `supabase_realtime` publication, so new messages appear only through the 15-second poll.
+- **Severity:** Low
+- **Evidence:** `pg_publication_tables` returned no rows (October 2026).
+- **Status:** Fix prepared in `backend/supabase/migrations/2026-10-07-live-messages-and-indexes.sql` (also revokes API access to `handle_new_user()` and adds three indexes); needs the owner's approval to run on production.

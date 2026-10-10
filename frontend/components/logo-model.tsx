@@ -45,6 +45,8 @@ export function LogoModel() {
           width={1152}
           height={768}
           sizes="(max-width: 800px) 90vw, 540px"
+          loading="eager"
+          fetchPriority="high"
         />
       </div>
     </div>

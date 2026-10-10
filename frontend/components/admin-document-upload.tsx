@@ -29,30 +29,48 @@ export function AdminDocumentUpload({ projectId }: { projectId: string }) {
     const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-120) || "document";
     // The first folder is the project id; storage policies use it to decide which client may read the file.
     const path = `${projectId}/${crypto.randomUUID()}-${safeName}`;
-    const { error: uploadError } = await supabase.storage.from(documentsBucket).upload(path, file, { contentType: file.type || undefined, upsert: false });
+    const { error: uploadError } = await supabase.storage
+      .from(documentsBucket)
+      .upload(path, file, { contentType: file.type || undefined, upsert: false });
     if (uploadError) {
       setMessage("Could not upload the file. Confirm the project-documents storage bucket exists.");
       setSaving(false);
       return;
     }
-    const { error } = await supabase.from("project_documents").insert({ project_id: projectId, name: (name.trim() || file.name).slice(0, 200), storage_path: path });
+    const { error } = await supabase
+      .from("project_documents")
+      .insert({ project_id: projectId, name: (name.trim() || file.name).slice(0, 200), storage_path: path });
     if (error) {
       await supabase.storage.from(documentsBucket).remove([path]);
       setMessage("Could not save the document record.");
     } else {
       setFile(null);
       setName("");
-      setInputKey(key => key + 1);
+      setInputKey((key) => key + 1);
       setMessage("Document uploaded. The client can download it from their project page.");
       router.refresh();
     }
     setSaving(false);
   }
 
-  return <form className="admin-form" onSubmit={submit}>
-    <label>File<input key={inputKey} type="file" onChange={event => setFile(event.target.files?.[0] ?? null)} required /></label>
-    <label>Display name <span className="admin-field-help">Optional — defaults to the file name.</span><input value={name} onChange={event => setName(event.target.value)} maxLength={200} /></label>
-    <button className="btn btn-primary" disabled={saving || !file}>{saving ? "Uploading..." : "Upload document"}</button>
-    {message && <p className="admin-message" role="status">{message}</p>}
-  </form>;
+  return (
+    <form className="admin-form" onSubmit={submit}>
+      <label>
+        File
+        <input key={inputKey} type="file" onChange={(event) => setFile(event.target.files?.[0] ?? null)} required />
+      </label>
+      <label>
+        Display name <span className="admin-field-help">Optional — defaults to the file name.</span>
+        <input value={name} onChange={(event) => setName(event.target.value)} maxLength={200} />
+      </label>
+      <button className="btn btn-primary" disabled={saving || !file}>
+        {saving ? "Uploading..." : "Upload document"}
+      </button>
+      {message && (
+        <p className="admin-message" role="status">
+          {message}
+        </p>
+      )}
+    </form>
+  );
 }

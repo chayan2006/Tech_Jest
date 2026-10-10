@@ -14,5 +14,5 @@ export const notSureService = "Not sure yet";
 
 export function findServiceArea(value: string | null | undefined) {
   const normalized = value?.trim().toLowerCase() ?? "";
-  return serviceAreas.find(area => area.slug === normalized || area.title.toLowerCase() === normalized);
+  return serviceAreas.find((area) => area.slug === normalized || area.title.toLowerCase() === normalized);
 }

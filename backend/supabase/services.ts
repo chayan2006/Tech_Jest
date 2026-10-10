@@ -10,10 +10,9 @@ function fromRow(row: Record<string, unknown>): Service {
     description: String(row.description),
     price: typeof row.price === "number" ? row.price : null,
     delivery: String(row.delivery),
-    icon: String(row.icon ?? "✦"),
     popular: Boolean(row.popular),
-    included: Array.isArray(row.included) ? row.included.filter(item => typeof item === "string") : [],
-    technologies: Array.isArray(row.technologies) ? row.technologies.filter(item => typeof item === "string") : [],
+    included: Array.isArray(row.included) ? row.included.filter((item) => typeof item === "string") : [],
+    technologies: Array.isArray(row.technologies) ? row.technologies.filter((item) => typeof item === "string") : [],
   };
 }
 
@@ -23,11 +22,11 @@ export async function getServices(options: { fallbackOnMissingTable?: boolean } 
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("service_catalog")
-      .select("slug, name, category, description, price, delivery, icon, popular, included, technologies")
+      .select("slug, name, category, description, price, delivery, popular, included, technologies")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .order("name", { ascending: true });
-    if (!error) return (data ?? []).map(row => fromRow(row as Record<string, unknown>));
+    if (!error) return (data ?? []).map((row) => fromRow(row as Record<string, unknown>));
     if (error.code === "42P01" || error.code === "PGRST205") {
       return fallbackOnMissingTable ? fallbackServices : [];
     }

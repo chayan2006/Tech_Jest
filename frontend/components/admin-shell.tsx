@@ -1,36 +1,31 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { createClient } from "@/backend/supabase/server";
+import { AdminNav } from "@/frontend/components/admin-nav";
 import { MessageNotification } from "@/frontend/components/message-notification";
 
-const links = [
-  ["Overview", "/admin"],
-  ["CRM", "/admin/crm"],
-  ["Messages", "/admin/messages"],
-  ["Notifications", "/admin/notifications"],
-  ["Proposals", "/admin/proposals"],
-  ["Projects", "/admin/projects"],
-  ["Invoices", "/admin/invoices"],
-  ["Website settings", "/admin/settings"],
-  ["Services", "/admin/services"],
-  ["Requests", "/admin/requests"],
-  ["People", "/admin/users"],
-  ["Activity", "/admin/activity"],
-] as const;
-
-export async function AdminShell({ children, email }: { children: ReactNode; email?: string }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  return <section className="section admin-section"><div className="container admin-layout">
-    <aside className="admin-sidebar">
-      <div className="eyebrow">TechJest control</div>
-      <h2>Admin console</h2>
-      <p>Manage leads, people, and website activity from one secure workspace.</p>
-      <nav className="admin-nav" aria-label="Admin navigation">
-        {links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
-      </nav>
-      <div className="admin-sidebar-foot"><MessageNotification userId={user?.id ?? ""} admin /><span>Signed in as</span><strong>{email ?? "Administrator"}</strong><Link href="/dashboard">View client site</Link></div>
-    </aside>
-    <main className="admin-content">{children}</main>
-  </div></section>;
+// Pages pass the admin from requireAdmin(), so the shell needs no extra session lookup.
+export function AdminShell({ children, user }: { children: ReactNode; user: { id: string; email?: string } }) {
+  return (
+    <section className="section admin-section">
+      <div className="container admin-layout">
+        <aside className="admin-sidebar">
+          <div className="eyebrow">TechJest control</div>
+          <h2>Admin console</h2>
+          <p>Manage leads, people, and website activity from one secure workspace.</p>
+          <AdminNav />
+          <div className="admin-sidebar-foot">
+            <MessageNotification userId={user.id} admin />
+            <span>Signed in as</span>
+            <strong>{user.email ?? "Administrator"}</strong>
+            <Link href="/">View website</Link>
+            <form action="/auth/signout" method="post">
+              <button className="text-button admin-signout">Log out</button>
+            </form>
+          </div>
+        </aside>
+        {/* The site layout already provides the page's <main>. */}
+        <div className="admin-content">{children}</div>
+      </div>
+    </section>
+  );
 }

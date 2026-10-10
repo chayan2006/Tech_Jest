@@ -1,10 +1,12 @@
 import { getSiteUrl } from "@/lib/site-url";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
+import { team } from "@/frontend/data/team";
 
 export async function GET() {
   const siteUrl = getSiteUrl();
   const { contact_email: contactEmail } = await getSiteSettings();
-  return new Response(`# TechJest
+  return new Response(
+    `# TechJest
 
 > TechJest is a software development company for startups and growing businesses. The team builds practical, dependable digital products with clear scope and measurable progress.
 
@@ -14,8 +16,10 @@ export async function GET() {
 - Source repository: https://github.com/chayan2006/Tech_Jest
 - Contact: ${contactEmail}
 - Service area: India and worldwide
-- Leadership: Chayan Khatua (Founder / CEO), Amit Shing Panwar (Founder / CEO)
-- Leadership team: Arushi Choudhary (CTO), Sindhant Dadwal (CFO), Nishtha Banerjee (CPO), Nayan Roy (CMO)
+
+## Team
+
+${team.map((member) => `- ${member.name}, ${member.role}: ${member.linkedin}`).join("\n")}
 
 ## Services
 
@@ -39,7 +43,9 @@ TechJest discovers the problem and constraints, plans a focused first release, b
 - [Contact](${siteUrl}/contact)
 
 Private authentication, dashboard, admin, API, and account routes are intentionally excluded.
-`, {
-    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
-  });
+`,
+    {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=3600" },
+    },
+  );
 }
