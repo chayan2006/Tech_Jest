@@ -2,8 +2,10 @@ import { cache } from "react";
 import { createClient } from "@/backend/supabase/server";
 
 // Digits only, 10–15 long, and not a run like 919999999999 left over from a placeholder.
+// wa.me needs the country code, so a 10-digit Indian mobile (optionally with a leading 0) gets 91.
 function normalizeWhatsAppNumber(value: string | null | undefined) {
-  const digits = (value ?? "").replace(/\D/g, "");
+  let digits = (value ?? "").replace(/\D/g, "");
+  if (/^0?[6-9]\d{9}$/.test(digits)) digits = `91${digits.slice(-10)}`;
   return digits.length >= 10 && digits.length <= 15 && !/(\d)\1{7,}/.test(digits) ? digits : "";
 }
 

@@ -13,7 +13,7 @@ const labels = [
   [
     "whatsapp_number",
     "WhatsApp number",
-    "International number with country code, e.g. 919876543210. Leave empty to hide all WhatsApp links.",
+    "Mobile number, e.g. 9876543210 (India) or with country code, e.g. 919876543210. Leave empty to hide all WhatsApp links.",
   ],
 ] as const;
 

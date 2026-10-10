@@ -264,10 +264,13 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <div className="footer-bottom">© {new Date().getFullYear()} TechJest. Built for what’s next.</div>
           </div>
         </footer>
+        {/* A labelled landmark, so screen-reader users can find the floating chat button. */}
         {whatsappChatHref && (
-          <a className="whatsapp" href={whatsappChatHref} aria-label="Chat with us on WhatsApp">
-            <ChatIcon />
-          </a>
+          <aside aria-label="WhatsApp chat">
+            <a className="whatsapp" href={whatsappChatHref} aria-label="Chat with us on WhatsApp">
+              <ChatIcon />
+            </a>
+          </aside>
         )}
       </body>
     </html>
