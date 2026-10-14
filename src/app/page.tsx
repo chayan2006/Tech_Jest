@@ -6,12 +6,12 @@ import type { Metadata } from "next";
 import { getSiteUrl } from "@/lib/site-url";
 
 export const metadata: Metadata = {
-  title: "TechJest | Official Software Development Company",
+  title: "TECH JEST | Ideas Today, Solutions Tomorrow",
   description:
-    "TechJest is an Indian software development company building websites, web apps, mobile apps, AI/ML solutions, cloud infrastructure, and digital products for growing businesses.",
+    "TechJest is an Indian software development company building websites, web apps, mobile apps, AI/ML solutions, cloud infrastructure, and digital products for growing businesses. Ideas Today, Solutions Tomorrow.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "TechJest | Official Software Development Company",
+    title: "TECH JEST | Ideas Today, Solutions Tomorrow",
     description:
       "TechJest builds practical websites, web apps, mobile apps, AI/ML solutions, and cloud infrastructure for growing businesses.",
     url: "/",

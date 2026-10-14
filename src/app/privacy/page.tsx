@@ -35,8 +35,8 @@ export default async function Privacy() {
           <h2>Who can see it</h2>
           <p>
             Your enquiries and project data are visible to the TechJest team. We use trusted providers to host the
-            website and store data, and they process it only to provide those services. We share information with
-            others only where the law requires it.
+            website and store data, and they process it only to provide those services. We share information with others
+            only where the law requires it.
           </p>
           <h2>Cookies</h2>
           <p>

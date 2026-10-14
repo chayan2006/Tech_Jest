@@ -555,115 +555,163 @@ p {
   outline-color: var(--crimson);
 }
 
-/* Opening animation: shown only when the inline script in the root layout sets html[data-intro]. */
-.intro {
+/* --- OPENING ANIMATION OVERLAY (Video intro) --- */
+/* Lock scrolling while the intro animation is playing */
+html.intro-active,
+body.intro-active {
+  overflow: hidden !important;
+  background-color: #050714;
+}
+
+#intro-loader {
   display: none;
-}
-html[data-intro] .intro {
-  display: block;
   position: fixed;
-  inset: 0;
-  z-index: 200;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #050714; /* Deep midnight blue/black matching the video */
+  z-index: 99999;
+  justify-content: center;
+  align-items: center;
+  transition:
+    opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 1.2s;
 }
-html[data-intro="skip"] .intro {
-  animation: intro-fade 0.3s var(--ease) forwards;
+
+/* Display only when intro is active */
+html[data-intro="play"] #intro-loader,
+body.intro-active #intro-loader {
+  display: flex;
 }
-.intro-panel {
+
+/* Class triggered via JS when video finishes or is skipped */
+#intro-loader.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#intro-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures full-screen coverage without black bars */
+}
+
+/* --- SKIP INTRO BUTTON --- */
+#skip-btn {
   position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: var(--navy);
-  border-bottom: 4px solid var(--crimson);
-  will-change: transform;
-  animation: intro-exit 0.8s var(--ease-curtain) 1.42s forwards;
-}
-.intro-content {
-  display: grid;
-  justify-items: center;
-  gap: 22px;
-  padding: 24px;
-  animation: intro-content-out 0.3s var(--ease) 1.3s forwards;
-}
-.intro-logo {
-  width: min(280px, 64vw);
-  height: auto;
-  animation: intro-logo-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.05s both;
-}
-.intro-rule {
-  display: block;
-  width: 150px;
-  height: 2px;
-  background: var(--crimson);
-  animation: intro-rule-in 0.55s var(--ease-curtain) 0.3s both;
-}
-.intro-caption {
-  color: var(--stone);
-  font-size: 0.66rem;
-  font-weight: 700;
-  letter-spacing: 0.34em;
+  bottom: 40px;
+  right: 40px;
+  padding: 10px 24px;
+  background: rgba(5, 12, 36, 0.65);
+  color: #00d2ff;
+  border: 1px solid rgba(0, 210, 255, 0.4);
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  animation: intro-caption-in 0.55s var(--ease) 0.42s both;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  z-index: 100000;
+  user-select: none;
+  outline: none;
 }
-html[data-intro="play"] :is(.hero-grid > *, .hero-assurances, .page-hero > .container, .marketplace-hero > .container) {
-  animation: settle 0.7s var(--ease) 1.42s both;
+
+#skip-btn:hover,
+#skip-btn:focus-visible {
+  background: rgba(0, 210, 255, 0.2);
+  border-color: #00d2ff;
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+  transform: translateY(-2px);
 }
-html[data-intro="play"] :is(.hero-grid > :nth-child(2), .hero-assurances) {
-  animation-delay: 1.48s;
-}
-@keyframes intro-logo-in {
-  from {
-    opacity: 0;
-    transform: scale(0.94);
-    filter: blur(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: none;
-  }
-}
-@keyframes intro-rule-in {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-@keyframes intro-caption-in {
-  from {
-    opacity: 0;
-    letter-spacing: 0.6em;
-  }
-  to {
-    opacity: 1;
-    letter-spacing: 0.34em;
+
+@media (max-width: 600px) {
+  #skip-btn {
+    bottom: 24px;
+    right: 20px;
+    padding: 8px 18px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
   }
 }
-@keyframes intro-content-out {
-  to {
-    opacity: 0;
-    transform: translateY(-14px);
-  }
+
+/* --- MAIN WEBSITE SMOOTH REVEAL --- */
+body.intro-active #main {
+  opacity: 0;
+  transform: translateY(20px);
 }
-@keyframes intro-exit {
-  to {
-    transform: translateY(-100%);
-  }
+
+body.loaded #main {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 1.2s ease 0.3s,
+    transform 1.2s ease 0.3s;
 }
-@keyframes intro-fade {
-  to {
-    opacity: 0;
-  }
+
+/* Standalone main-content styling */
+#main-content {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+  background: radial-gradient(circle at center, #0d1638 0%, #050714 75%);
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 1.2s ease 0.3s,
+    transform 1.2s ease 0.3s;
 }
-@keyframes settle {
-  from {
-    translate: 0 40px;
-  }
-  to {
-    translate: none;
-  }
+
+body.loaded #main-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.brand-title {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: 6px;
+  background: linear-gradient(90deg, #e0e6ed 0%, #ffffff 45%, #00d2ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.tagline {
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  color: #8fa3c7;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 2.5rem;
+}
+
+.cta-button {
+  padding: 14px 36px;
+  background: linear-gradient(135deg, #0066ff 0%, #00d2ff 100%);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  border-radius: 30px;
+  box-shadow: 0 4px 25px rgba(0, 210, 255, 0.35);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  display: inline-block;
+}
+
+.cta-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 30px rgba(0, 210, 255, 0.6);
 }
 
 /* Home hero */
@@ -3488,7 +3536,8 @@ h2 + .process-grid {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
-  .intro {
+  .intro,
+  #intro-loader {
     display: none !important;
   }
   .logo-model-face {

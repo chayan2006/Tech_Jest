@@ -33,8 +33,8 @@ export default async function Terms() {
           </p>
           <h2>Ownership of your work</h2>
           <p>
-            Once a project is paid for in full, you own the source code, design files, and documentation created for
-            it, unless the proposal says otherwise. Third-party tools and libraries stay under their own licences.
+            Once a project is paid for in full, you own the source code, design files, and documentation created for it,
+            unless the proposal says otherwise. Third-party tools and libraries stay under their own licences.
           </p>
           <h2>Liability</h2>
           <p>

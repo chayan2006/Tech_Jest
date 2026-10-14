@@ -32,7 +32,7 @@ const person = (member: TeamMember) => ({
 export const viewport: Viewport = { themeColor: "#1b1e4a" };
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "TechJest | Software Development Company for Growing Businesses", template: "%s | TechJest" },
+  title: { default: "TECH JEST | Ideas Today, Solutions Tomorrow", template: "%s | TechJest" },
   description:
     "TechJest is a software development company for startups and growing businesses. We build websites, web apps, mobile apps, AI/ML solutions, cloud infrastructure, and digital products.",
   keywords: [
