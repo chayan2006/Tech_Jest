@@ -4,7 +4,7 @@ What is still open before TechJest is fully launch-ready. Items marked _owner_ n
 
 ## Business details (owner)
 
-- [ ] Chitwandeep Kaur's job title (the About page shows "Team member" until then).
+- [x] Chitwandeep Kaur's job title: Developer.
 - [x] Amit's surname is "Singh" (corrected October 2026).
 - [ ] WhatsApp business number, saved in Admin → Website settings.
 - [ ] Custom domain (for example `techjest.in`), then set `NEXT_PUBLIC_SITE_URL` in Vercel and add the new `/auth/callback` URL in Supabase Auth.

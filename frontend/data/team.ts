@@ -60,7 +60,7 @@ export const team: readonly TeamMember[] = [
     id: "chitwandeep-kaur",
     photo: "/images/team/chitwandeep-kaur-portrait.jpg",
     name: "Chitwandeep Kaur",
-    role: "Team member",
+    role: "Developer",
     linkedin: "https://www.linkedin.com/in/chitwandeep-kaur-28b487420/",
   },
 ];
