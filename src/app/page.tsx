@@ -4,6 +4,7 @@ import Image from "next/image";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
 import type { Metadata } from "next";
 import { getSiteUrl } from "@/lib/site-url";
+import { InstagramFeed } from "@/frontend/components/InstagramFeed";
 
 export const metadata: Metadata = {
   title: "TECH JEST | Ideas Today, Solutions Tomorrow",
@@ -295,6 +296,7 @@ export default async function Home() {
           </Link>
         </div>
       </section>
-    </>
+    <InstagramFeed />
+</>
   );
 }

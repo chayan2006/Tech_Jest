@@ -124,7 +124,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     },
     founder: founders.map(person),
     employee: team.map((member) => ({ ...person(member), jobTitle: member.role })),
-    sameAs: ["https://github.com/chayan2006/Tech_Jest"],
+    sameAs: ["https://github.com/chayan2006/Tech_Jest", "https://www.linkedin.com/company/techjest"],
     areaServed: [
       { "@type": "Country", name: "India" },
       { "@type": "Place", name: "Worldwide" },
