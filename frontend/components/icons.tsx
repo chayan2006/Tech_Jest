@@ -55,6 +55,14 @@ export const ChatIcon = () => (
   </Icon>
 );
 
+export const InstagramIcon = () => (
+  <Icon>
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </Icon>
+);
+
 const categoryIcons: Record<ServiceCategory, React.ReactNode> = {
   "Web Development": <path d="M8.5 8 4.5 12l4 4M15.5 8l4 4-4 4M13.5 5.5l-3 13" />,
   "E-Commerce": (

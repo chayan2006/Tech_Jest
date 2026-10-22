@@ -38,7 +38,13 @@ export async function POST(request: Request) {
         0,
       ),
     }))
-    .sort((a, b) => (b.score - a.score || a.service.popular ? -1 : 1))
+    .sort((a, b) => {
+      const scoreDiff = b.score - a.score;
+      if (scoreDiff !== 0) return scoreDiff;
+      const popA = a.service.popular ? 1 : 0;
+      const popB = b.service.popular ? 1 : 0;
+      return popB - popA;
+    })
     .slice(0, 5);
   return NextResponse.json({
     recommendations: ranked.map(({ service }) => ({

@@ -296,7 +296,7 @@ export default async function Home() {
           </Link>
         </div>
       </section>
-    <InstagramFeed />
-</>
+      <InstagramFeed />
+    </>
   );
 }

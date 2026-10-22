@@ -50,7 +50,14 @@ export default function OpengraphImage() {
         </div>
       </div>
       <div style={{ display: "flex", flex: 1, justifyContent: "flex-end" }}>
-        <img src={`data:image/png;base64,${logo.toString("base64")}`} width={420} height={280} alt="" />
+        <img
+          src={`data:image/png;base64,${logo.toString("base64")}`}
+          width={420}
+          height={280}
+          alt=""
+          loading="lazy"
+          style={{ border: "none", borderRadius: "8px" }}
+        />
       </div>
     </div>,
     {

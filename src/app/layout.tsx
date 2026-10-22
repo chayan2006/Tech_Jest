@@ -248,6 +248,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                       <a href={whatsappHref}>WhatsApp</a>
                     </>
                   )}
+                  <br />
+                  <a
+                    href="https://instagram.com/techjest_"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="TechJest on Instagram"
+                  >
+                    Instagram
+                  </a>
                 </p>
               </div>
               <div>
