@@ -18,7 +18,7 @@ export function getCart(): string[] {
     return [];
   }
 }
-function addToCart(slug: string) {
+export function addToCart(slug: string) {
   const cart = getCart();
   if (!cart.includes(slug)) {
     window.localStorage.setItem(CART_KEY, JSON.stringify([...cart, slug]));
