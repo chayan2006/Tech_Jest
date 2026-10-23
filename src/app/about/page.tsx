@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Image from "next/image";
 import { getSiteUrl } from "@/lib/site-url";
 import { team } from "@/frontend/data/team";
 import { LinkedInIcon } from "@/frontend/components/icons";
 
-export const metadata: Metadata = {
-  title: "About TechJest and Our Founders",
+export const metadata: Metadata = pageMetadata({
+  title: "About Us: Founders and Team",
   description:
-    "Meet the TechJest team: Founders and CEOs Chayan Khatua and Amit Singh Panwar, CTO Arushi Choudhary, CFO Sindhant Dadwal, CPO Nishtha Banerjee, CMO Nayan Roy, and HR Chitwandeep Kaur.",
-  alternates: { canonical: "/about" },
-};
+    "Meet the TechJest team, led by founders Chayan Khatua and Amit Singh Panwar. We build websites, apps, and AI solutions for growing businesses.",
+  path: "/about",
+});
 
 export default function About() {
   return (

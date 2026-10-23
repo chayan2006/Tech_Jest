@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "TECH JEST | Ideas Today, Solutions Tomorrow",
-  description: "Ideas Today | Solutions Tomorrow. TechJest opening animation video showcase.",
+  title: "TechJest — Opening Animation",
+  description: "TechJest opening animation video showcase.",
+  robots: { index: false, follow: false },
 };
 
 export default function OpeningAnimationPage() {

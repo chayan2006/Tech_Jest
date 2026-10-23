@@ -25,3 +25,38 @@ test("every sitemap link works", async ({ request }) => {
   expect(urls.length).toBeGreaterThan(5);
   for (const path of urls) expect((await request.get(path)).status(), path).toBe(200);
 });
+
+test("each public page shares its own title, link, and preview image", async ({ page, request }) => {
+  const services = (await (await request.get("/api/services")).json()) as { slug: string }[];
+  const paths = ["/", "/about", "/contact", "/services", "/portfolio", "/privacy", "/terms"];
+  paths.push("/services/web-development", `/services/${services[0]!.slug}`);
+  const homeTitle = await (async () => {
+    await page.goto("/");
+    return page.locator('meta[property="og:title"]').getAttribute("content");
+  })();
+  for (const path of paths) {
+    await page.goto(path);
+    const og = (name: string) => page.locator(`meta[property="og:${name}"]`).first().getAttribute("content");
+    expect(new URL((await og("url"))!).pathname, path).toBe(path);
+    expect(await og("image"), path).toContain("/opengraph-image");
+    if (path !== "/") expect(await og("title"), path).not.toBe(homeTitle);
+    expect((await page.title()).match(/TechJest/g), path).toHaveLength(1);
+  }
+});
+
+test("a service page links to every other service in its category", async ({ page, request }) => {
+  const services = (await (await request.get("/api/services")).json()) as { slug: string; category: string }[];
+  const byCategory = Map.groupBy(services, (item) => item.category);
+  const [, siblings] = [...byCategory].find(([, items]) => items.length >= 3)!;
+  await page.goto(`/services/${siblings[0]!.slug}`);
+  const related = page.locator(".related-services .service-card a");
+  await expect(related).toHaveCount(siblings.length - 1);
+});
+
+test("the homepage hydrates without errors", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  await page.waitForLoadState("networkidle");
+  expect(errors).toEqual([]);
+});

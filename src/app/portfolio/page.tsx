@@ -1,12 +1,13 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { getSiteUrl } from "@/lib/site-url";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Our Work | Stream Bird India Website",
   description: "See how TechJest built the Stream Bird India company homepage and technology ecosystem website.",
-  alternates: { canonical: "/portfolio" },
-};
+  path: "/portfolio",
+});
 
 export default function Portfolio() {
   return (

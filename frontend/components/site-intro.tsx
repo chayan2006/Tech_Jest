@@ -23,9 +23,10 @@ export const introScript = `(() => {
   }
 })();`;
 
-// The only pages the intro can play on.
+// The only pages the intro can play on. On Vercel the cached homepage is rendered with the path "/index"
+// while the browser sees "/"; both must render the overlay, or React reports a hydration mismatch (#418).
 function isIntroPage(pathname: string) {
-  return pathname === "/" || pathname === "/opening_animation_video";
+  return pathname === "/" || pathname === "/index" || pathname === "/opening_animation_video";
 }
 
 export function SiteIntro() {

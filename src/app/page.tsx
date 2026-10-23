@@ -3,21 +3,17 @@ import { LogoModel } from "@/frontend/components/logo-model";
 import Image from "next/image";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { getSiteUrl } from "@/lib/site-url";
 import { InstagramFeed } from "@/frontend/components/InstagramFeed";
 
-export const metadata: Metadata = {
-  title: "TECH JEST | Ideas Today, Solutions Tomorrow",
+export const metadata: Metadata = pageMetadata({
+  title: "TechJest | Web Development, AI Automation & Digital Solutions",
   description:
-    "TechJest is an Indian software development company building websites, web apps, mobile apps, AI/ML solutions, cloud infrastructure, and digital products for growing businesses. Ideas Today, Solutions Tomorrow.",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "TECH JEST | Ideas Today, Solutions Tomorrow",
-    description:
-      "TechJest builds practical websites, web apps, mobile apps, AI/ML solutions, and cloud infrastructure for growing businesses.",
-    url: "/",
-  },
-};
+    "TechJest builds websites, web apps, mobile apps, and AI automation for startups and growing businesses. Tell us your goal and get a clear proposal.",
+  path: "/",
+  absoluteTitle: true,
+});
 
 const services = [
   ["Web development", "web-development", "Marketing sites, web apps, and e-commerce that stay fast and maintainable."],
@@ -91,12 +87,17 @@ export default async function Home() {
             "@context": "https://schema.org",
             "@type": "WebPage",
             "@id": `${getSiteUrl()}/#webpage`,
-            name: "TechJest | Official Software Development Company",
+            name: "TechJest | Web Development, AI Automation & Digital Solutions",
             url: getSiteUrl(),
             isPartOf: { "@id": `${getSiteUrl()}/#website` },
             about: { "@id": `${getSiteUrl()}/#organization` },
-            description: "Official website of TechJest, an Indian software development company for growing businesses.",
+            description:
+              "Official website of TechJest — a software development company offering web development, AI automation, mobile apps, cloud infrastructure, and digital solutions for growing businesses.",
             inLanguage: "en-IN",
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [{ "@type": "ListItem", position: 1, name: "TechJest", item: getSiteUrl() }],
+            },
           }),
         }}
       />

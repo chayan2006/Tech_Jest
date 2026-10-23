@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Link from "next/link";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Terms of Service",
   description: "The terms for using the TechJest website and requesting software development services.",
-  alternates: { canonical: "/terms" },
-};
+  path: "/terms",
+});
 
 export default async function Terms() {
   const { contact_email: email } = await getSiteSettings();

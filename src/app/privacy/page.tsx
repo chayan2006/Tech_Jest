@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import Link from "next/link";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Privacy Policy",
   description: "How TechJest collects, uses, and protects the information you share through this website.",
-  alternates: { canonical: "/privacy" },
-};
+  path: "/privacy",
+});
 
 export default async function Privacy() {
   const { contact_email: email } = await getSiteSettings();

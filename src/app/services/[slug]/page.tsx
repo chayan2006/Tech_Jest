@@ -5,6 +5,8 @@ import { getServices } from "@/backend/supabase/services";
 import { AddToCartButton } from "@/frontend/components/service-cart";
 import { getSiteUrl } from "@/lib/site-url";
 import { jsonLd } from "@/lib/json-ld";
+import { pageMetadata } from "@/lib/page-metadata";
+import { serviceAreas } from "@/frontend/data/service-areas";
 
 // Each service page is built on its first visit, then cached; saving in Admin → Services refreshes it.
 export const revalidate = 300;
@@ -124,10 +126,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { catalogService, service } = await getService(slug);
   if (!service) return {};
   return {
-    title: `${service.title} Services`,
-    description: `${service.intro} Explore TechJest ${service.title} services, deliverables, and project options.`,
-    alternates: { canonical: `/services/${slug}` },
-    openGraph: { title: `TechJest ${service.title} Services`, description: service.intro, url: `/services/${slug}` },
+    ...pageMetadata({
+      title: `${service.title} Services`,
+      description: `${service.intro} Explore TechJest ${service.title} services, deliverables, and project options.`,
+      path: `/services/${slug}`,
+    }),
     keywords: [service.title, "TechJest", "software development", ...(catalogService?.technologies ?? [])],
   };
 }
@@ -140,10 +143,11 @@ export default async function Service({ params }: { params: Promise<{ slug: stri
   const serviceUrl = `${siteUrl}/services/${slug}`;
   // Broad service areas have no cart item, so they go straight to the contact form.
   const contactHref = `/contact?service=${encodeURIComponent(slug)}`;
-  const relatedServices = catalogService
-    ? services
-        .filter((item) => item.category === catalogService.category && item.slug !== catalogService.slug)
-        .slice(0, 3)
+  // Every other service in the same category, so each service page is linked from all its siblings.
+  const relatedCategory =
+    catalogService?.category ?? serviceAreas.find((area) => area.slug === slug)?.catalogCategory ?? null;
+  const relatedServices = relatedCategory
+    ? services.filter((item) => item.category === relatedCategory && item.slug !== slug)
     : [];
   const serviceSchema = {
     "@context": "https://schema.org",
@@ -163,8 +167,9 @@ export default async function Service({ params }: { params: Promise<{ slug: stri
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Services", item: `${siteUrl}/services` },
-      { "@type": "ListItem", position: 2, name: service.title, item: serviceUrl },
+      { "@type": "ListItem", position: 1, name: "TechJest", item: siteUrl },
+      { "@type": "ListItem", position: 2, name: "Services", item: `${siteUrl}/services` },
+      { "@type": "ListItem", position: 3, name: service.title, item: serviceUrl },
     ],
   };
 
@@ -243,7 +248,7 @@ export default async function Service({ params }: { params: Promise<{ slug: stri
             <div className="section-head">
               <div>
                 <div className="eyebrow">Build the full solution</div>
-                <h2>Related {catalogService?.category} services.</h2>
+                <h2>Related {relatedCategory} services.</h2>
               </div>
               <Link className="card-link" href="/services">
                 Browse all services

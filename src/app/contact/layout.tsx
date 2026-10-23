@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { getSiteUrl } from "@/lib/site-url";
 
-export const metadata: Metadata = {
-  title: "Start a Software Project",
+export const metadata: Metadata = pageMetadata({
+  title: "Contact Us: Get a Project Quote",
   description:
-    "Tell TechJest what you are building and get a practical software project consultation for web, mobile, AI, cloud, design, or support work.",
-  alternates: { canonical: "/contact" },
-};
+    "Get in touch with TechJest to discuss your web development, AI automation, mobile app, or digital product project. We reply within one business day.",
+  path: "/contact",
+});
 
 export default function ContactLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const siteUrl = getSiteUrl();

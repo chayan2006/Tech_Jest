@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { getSiteUrl } from "@/lib/site-url";
 import { ServiceMarketplace } from "@/frontend/components/service-marketplace";
 import { getServices } from "@/backend/supabase/services";
@@ -6,12 +7,12 @@ import { getServices } from "@/backend/supabase/services";
 // Cached like the other public pages; saving in Admin → Services refreshes it straight away.
 export const revalidate = 300;
 
-export const metadata: Metadata = {
-  title: "IT Services Marketplace",
+export const metadata: Metadata = pageMetadata({
+  title: "Web, App & AI Development Services",
   description:
-    "Browse TechJest's individual web, AI, e-commerce, mobile, design, automation, and support services. Build a project package and request a quote.",
-  alternates: { canonical: "/services" },
-};
+    "Explore TechJest's web development, AI automation, mobile app, cloud, UI/UX, and IT consulting services. Build a custom package and request a quote.",
+  path: "/services",
+});
 
 export default async function Services() {
   const services = await getServices();

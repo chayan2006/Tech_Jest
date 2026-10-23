@@ -31,7 +31,7 @@ const person = (member: TeamMember) => ({
 export const viewport: Viewport = { themeColor: "#1b1e4a" };
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: { default: "TECH JEST | Ideas Today, Solutions Tomorrow", template: "%s | TechJest" },
+  title: { default: "TechJest | Web Development, AI Automation & Digital Solutions", template: "%s | TechJest" },
   description:
     "TechJest is a software development company for startups and growing businesses. We build websites, web apps, mobile apps, AI/ML solutions, cloud infrastructure, and digital products.",
   keywords: [
@@ -56,15 +56,16 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     siteName: "TechJest",
-    title: "TechJest | Software Development Company for Growing Businesses",
+    title: "TechJest | Web Development, AI Automation & Digital Solutions",
     description:
-      "Practical software engineering for startups and growing teams, led by Founders and CEOs Chayan Khatua and Amit Singh Panwar.",
+      "TechJest builds practical websites, web apps, mobile apps, AI/ML solutions, and cloud infrastructure for startups and growing businesses.",
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TechJest | Software Development Company",
-    description: "Web, mobile, AI, cloud, design, and IT consulting from TechJest.",
+    title: "TechJest | Web Development, AI Automation & Digital Solutions",
+    description:
+      "TechJest builds websites, web apps, mobile apps, AI/ML solutions, and cloud infrastructure for growing businesses.",
   },
   robots: {
     index: true,
@@ -115,7 +116,11 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     },
     founder: founders.map(person),
     employee: team.map((member) => ({ ...person(member), jobTitle: member.role })),
-    sameAs: ["https://github.com/chayan2006/Tech_Jest", "https://www.linkedin.com/company/techjest"],
+    sameAs: [
+      "https://github.com/chayan2006/Tech_Jest",
+      "https://www.linkedin.com/company/techjest",
+      "https://www.instagram.com/techjest_",
+    ],
     areaServed: [
       { "@type": "Country", name: "India" },
       { "@type": "Place", name: "Worldwide" },
@@ -151,13 +156,14 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
     name: "TechJest",
     url: siteUrl,
     publisher: { "@id": `${siteUrl}/#organization` },
     inLanguage: "en-IN",
-    description: "Official website of TechJest, led by Founders and CEOs Chayan Khatua and Amit Singh Panwar.",
+    description:
+      "Official website of TechJest — web development, AI automation, mobile apps, cloud infrastructure, and digital solutions for growing businesses.",
     about: { "@id": `${siteUrl}/#organization` },
-    keywords: "software development, web development, mobile apps, AI, cloud, DevOps, UI/UX design, IT consulting",
   };
   // The intro script sets data-intro on <html> before hydration, hence suppressHydrationWarning.
   return (
