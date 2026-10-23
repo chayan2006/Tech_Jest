@@ -121,6 +121,19 @@ async function getService(slug: string) {
   return { services, catalogService, service };
 }
 
+// The search snippet: the service's own intro plus its real price and timeline when the catalog has them,
+// kept to 160 characters so Google shows it whole.
+function serviceDescription(
+  service: { title: string; intro: string },
+  catalogService: { price: number | null; delivery: string } | undefined,
+) {
+  const detail = catalogService
+    ? `${catalogService.price ? `From ₹${catalogService.price.toLocaleString("en-IN")}` : "Custom quote"}, delivered in ${catalogService.delivery}.`
+    : `${service.title} services from TechJest for growing businesses.`;
+  const full = `${service.intro} ${detail}`;
+  return full.length <= 160 ? full : service.intro;
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const { catalogService, service } = await getService(slug);
@@ -128,7 +141,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     ...pageMetadata({
       title: `${service.title} Services`,
-      description: `${service.intro} Explore TechJest ${service.title} services, deliverables, and project options.`,
+      description: serviceDescription(service, catalogService),
       path: `/services/${slug}`,
     }),
     keywords: [service.title, "TechJest", "software development", ...(catalogService?.technologies ?? [])],

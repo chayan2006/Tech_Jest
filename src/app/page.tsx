@@ -2,6 +2,9 @@ import Link from "next/link";
 import { LogoModel } from "@/frontend/components/logo-model";
 import Image from "next/image";
 import { getSiteSettings } from "@/backend/supabase/site-settings";
+import { getServices } from "@/backend/supabase/services";
+import type { Service } from "@/frontend/data/services";
+import { formatMoney } from "@/lib/format";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/page-metadata";
 import { getSiteUrl } from "@/lib/site-url";
@@ -41,11 +44,25 @@ const process = [
 ];
 // Each line restates a commitment already made on the site (services, FAQ, contact).
 const assurances = ["Six service areas", "Weekly demos", "You own the code", "Replies within one business day"];
-const faqs = [
-  [
-    "How much does a project cost?",
-    "It depends on the scope and the outcome you need. We’ll give you a clear proposal after a short discovery call.",
-  ],
+// The cost answer quotes real starting prices from the live catalog, so it stays true when prices change
+// in the admin console. With no priced services it falls back to the general answer.
+function costAnswer(services: Service[]) {
+  const priced = services.filter((item): item is Service & { price: number } => item.price !== null && item.price > 0);
+  if (!priced.length) {
+    return "It depends on the scope and the outcome you need. We’ll give you a clear proposal after a short discovery call.";
+  }
+  const cheapest = priced.reduce((low, item) => (item.price < low.price ? item : low));
+  const examples = priced
+    .filter((item) => item.popular && item.slug !== cheapest.slug)
+    .sort((a, b) => b.price - a.price)
+    .slice(0, 2);
+  const quote = (item: Service & { price: number }) =>
+    `${item.name} from ${formatMoney(item.price)} (${item.delivery})`;
+  const range = examples.length ? `, and for example ${examples.map(quote).join(" or ")}` : "";
+  return `Every service on our Services page lists its starting price and timeline. Packages start at ${formatMoney(cheapest.price)} for ${cheapest.name} (${cheapest.delivery})${range}. Larger or custom projects get a clear proposal after a short discovery call.`;
+}
+
+const otherFaqs = [
   ["How quickly can we start?", "Most projects begin within one to three weeks of agreeing on scope and availability."],
   [
     "Who owns the code?",
@@ -63,7 +80,8 @@ const faqs = [
 ];
 
 export default async function Home() {
-  const settings = await getSiteSettings();
+  const [settings, catalog] = await Promise.all([getSiteSettings(), getServices()]);
+  const faqs = [["How much does a project cost?", costAnswer(catalog)], ...otherFaqs];
   return (
     <>
       <script
