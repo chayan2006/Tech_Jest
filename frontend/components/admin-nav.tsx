@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 // Day-to-day work first, then website setup.
@@ -21,8 +22,16 @@ const links = [
 
 export function AdminNav() {
   const pathname = usePathname();
+  const navRef = useRef<HTMLElement>(null);
+  // On phones the menu is one scrolling row; bring the current page's tab into view.
+  useEffect(() => {
+    const nav = navRef.current;
+    const active = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (nav && active && nav.scrollWidth > nav.clientWidth)
+      nav.scrollLeft = active.offsetLeft - nav.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+  }, [pathname]);
   return (
-    <nav className="admin-nav" aria-label="Admin navigation">
+    <nav className="admin-nav" aria-label="Admin navigation" ref={navRef}>
       {links.map(([label, href]) => {
         const active = href === "/admin" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
         return (

@@ -2,13 +2,26 @@ import { requireAdmin } from "@/backend/supabase/admin";
 import { AdminShell } from "@/frontend/components/admin-shell";
 import { AdminUserActions } from "@/frontend/components/admin-user-actions";
 import { formatDate } from "@/lib/format";
+import { pageFromParam, pageRange } from "@/lib/pagination";
+import { AdminPagination } from "@/frontend/components/admin-pagination";
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string | string[] }>;
+}) {
   const { supabase, user } = await requireAdmin();
-  const { data: profiles, error } = await supabase
+  const page = pageFromParam((await searchParams).page);
+  const [from, to] = pageRange(page);
+  const {
+    data: profiles,
+    count,
+    error,
+  } = await supabase
     .from("profiles")
-    .select("id, full_name, company, phone, purpose, created_at")
-    .order("created_at", { ascending: false });
+    .select("id, full_name, company, phone, purpose, created_at", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, to);
   const ids = profiles?.map((profile) => profile.id) ?? [];
   const { data: requests } = ids.length
     ? await supabase
@@ -32,7 +45,7 @@ export default async function AdminUsersPage() {
           <h1>Everyone using TechJest.</h1>
           <p className="lead">Customer profiles, contact details, and their request history.</p>
         </div>
-        <span className="admin-count">{profiles?.length ?? 0} people</span>
+        <span className="admin-count">{count ?? profiles?.length ?? 0} people</span>
       </div>
       {error ? (
         <div className="empty-state">
@@ -88,6 +101,7 @@ export default async function AdminUsersPage() {
           )}
         </div>
       )}
+      {!error && <AdminPagination page={page} total={count ?? 0} basePath="/admin/users" />}
     </AdminShell>
   );
 }

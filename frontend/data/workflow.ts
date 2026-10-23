@@ -52,11 +52,15 @@ export const statusOptions = {
 
 export type StatusKind = keyof typeof statusOptions;
 
-// Clients read conversation statuses from their own side.
-const clientLabels: Partial<Record<string, string>> = { waiting_for_client: "Awaiting your reply" };
+// Clients read some statuses from their own side.
+const clientLabels: Partial<Record<StatusKind, Partial<Record<string, string>>>> = {
+  conversation: { waiting_for_client: "Awaiting your reply" },
+  proposal: { sent: "Awaiting your decision" },
+};
 
 export function statusLabel(kind: StatusKind, value: string, audience: "admin" | "client" = "admin") {
-  if (audience === "client" && kind === "conversation" && clientLabels[value]) return clientLabels[value];
+  const clientLabel = audience === "client" ? clientLabels[kind]?.[value] : undefined;
+  if (clientLabel) return clientLabel;
   const options: readonly (readonly [string, string])[] = statusOptions[kind];
   return options.find(([option]) => option === value)?.[1] ?? value.replaceAll("_", " ");
 }

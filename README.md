@@ -7,12 +7,15 @@ Marketing website, client portal, and admin console for TechJest, built with Nex
 ```text
 src/app/              Pages, layouts, API routes, and global styles (Next.js App Router)
   _og/                Fonts used only by the generated link-preview image
-src/lib/              Small shared helpers (site URL, safe post-login redirects)
+src/lib/              Small shared helpers (site URL, safe redirects, dates and money, ids, pagination)
 src/proxy.ts          Refreshes the Supabase session cookie on each request
 frontend/components/  Reusable UI components
 frontend/data/        Static content: team, service areas, fallback service catalog
 backend/supabase/     Supabase clients and data helpers, schema.sql, migrations, seed data
+backend/email/        Email alerts for the team and clients (Resend)
+e2e/                  Playwright browser tests and their local Supabase setup
 public/               Images, home-screen icons, Google Search Console verification file
+docs/                 CI/CD and post-login redirect notes
 ai/                   Notes for AI agents: rules, current state, decisions, known issues
 ```
 
@@ -22,7 +25,7 @@ Path aliases: `@/*` → `src/*`, `@/frontend/*` → `frontend/*`, `@/backend/*` 
 
 - **Colours** are CSS variables at the top of [`src/app/globals.css`](./src/app/globals.css): Midnight Navy `#1B1E4A`, Warm Stone Grey `#AFAEA2`, and Crimson Red `#D21319`.
 - **Fonts:** Source Serif 4 for headings and Manrope for text, self-hosted through `next/font`.
-- **Opening animation:** [`frontend/components/site-intro.tsx`](./frontend/components/site-intro.tsx). It plays on public pages at most once every 30 minutes, and never for visitors who prefer reduced motion or for crawlers. Any click, scroll, or key press skips it.
+- **Opening animation:** [`frontend/components/site-intro.tsx`](./frontend/components/site-intro.tsx) plays `public/opening_animation_video.mp4` when the homepage (or `/opening_animation_video`) is loaded, never for visitors who prefer reduced motion or for crawlers. The Skip button, Escape, Space, or Enter skips it. Other pages never load the video.
 - **Icons:** [`frontend/components/icons.tsx`](./frontend/components/icons.tsx), including one icon per service category.
 - **Link preview and app icons:** [`src/app/opengraph-image.tsx`](./src/app/opengraph-image.tsx), `src/app/favicon.ico`, `src/app/icon.png`, `src/app/apple-icon.png`, and `public/icons/`.
 
@@ -49,9 +52,24 @@ Open `http://localhost:3000`.
 | `npm run build`        | Production build                              |
 | `npm run start`        | Serve the production build                    |
 | `npm run typecheck`    | TypeScript check                              |
-| `npm run check`        | Typecheck, then production build (used by CI) |
+| `npm test`             | Unit and API route tests (Vitest)             |
+| `npm run check`        | Typecheck, tests, format check, then build (CI) |
 | `npm run format`       | Format the code with Prettier                 |
 | `npm run format:check` | Report files that need formatting             |
+| `npm run e2e:db`       | Start the local Supabase for browser tests    |
+| `npm run test:e2e`     | Browser tests (Playwright)                    |
+| `npm run e2e:db:stop`  | Stop that local Supabase and delete its data  |
+
+### Browser tests
+
+`e2e/` holds Playwright tests for sign-up, password reset, requests (signed in and as a guest), the cart, the admin console, database permissions, and caching. They run against a throwaway local Supabase, never the live project (the config refuses any non-local database), and use the installed Google Chrome.
+
+1. Start Docker Desktop.
+2. `npm run e2e:db` starts Supabase on ports 55320–55329 and loads `schema.sql`, the seed, and every migration (a fresh database each time).
+3. `npm run test:e2e` builds the app into `.next-e2e` (your normal `.next` build is untouched), serves it on port 3200, and runs the tests.
+4. `npm run e2e:db:stop` when you are done.
+
+CI runs the same steps on every push and pull request.
 
 ## Deployment
 
@@ -64,6 +82,9 @@ Set these environment variables in Vercel:
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 - `SUPABASE_JWKS_URL` (optional; reserved for token verification, not read by the current code)
 - `CONTACT_EMAIL` and `WHATSAPP_NUMBER` (fallbacks; the values saved in Admin → Website settings take priority)
+- `RESEND_API_KEY` and `ALERT_EMAIL_TO` (optional; turn on email alerts for new requests, see `.env.example`)
+
+Public pages (home, services, about, contact, and so on) are cached for 5 minutes and served from Vercel's CDN; saving in Admin → Website settings or Admin → Services refreshes them straight away. The signed-in parts of the header load in the browser. Visitors can send a request without an account (a guest enquiry, answered by email); signed-in clients get a conversation in their workspace.
 
 Never add `SUPABASE_SECRET_KEY` to client or Vercel environment variables for this application, and never commit it. The app uses Supabase Auth and Row Level Security with the publishable key only.
 
@@ -71,7 +92,7 @@ Never add `SUPABASE_SECRET_KEY` to client or Vercel environment variables for th
 
 1. Create a Supabase project.
 2. In the SQL Editor, run [`backend/supabase/schema.sql`](./backend/supabase/schema.sql), then [`backend/supabase/seed-services-catalog.sql`](./backend/supabase/seed-services-catalog.sql). Both are safe to run again.
-   - Existing databases also need the dated files in [`backend/supabase/migrations/`](./backend/supabase/migrations/), run in name order (both are safe to rerun).
+   - Existing databases also need the dated files in [`backend/supabase/migrations/`](./backend/supabase/migrations/), run in name order (all are safe to rerun). Run a new migration before deploying the code that comes with it.
    - For a clean rebuild, run [`backend/supabase/reset-database.sql`](./backend/supabase/reset-database.sql) first. It is destructive: it removes all public application data (not Auth users).
 3. Copy the project URL and publishable key into `.env.local` (see [`.env.example`](./.env.example)):
 
@@ -81,7 +102,7 @@ Never add `SUPABASE_SECRET_KEY` to client or Vercel environment variables for th
    SUPABASE_JWKS_URL=https://your-project.supabase.co/auth/v1/.well-known/jwks.json
    ```
 
-4. In Supabase Auth settings, add `http://localhost:3000/auth/callback` and your production URL followed by `/auth/callback` as redirect URLs.
+4. In Supabase → Authentication → URL Configuration, set **Site URL** to the production URL, and add `http://localhost:3000/auth/callback**` and your production URL followed by `/auth/callback**` as redirect URLs. Sign-up confirmation, Google login, and password-reset emails all return through `/auth/callback`.
 5. For Google login, enable **Authentication → Providers → Google** in Supabase with the OAuth client ID and secret from Google Cloud, and add Supabase's callback URL (usually `https://<project-ref>.supabase.co/auth/v1/callback`) as an authorized redirect URI in Google Cloud.
 
 `/api/health` reports whether the public Supabase configuration is present; it never returns secret values.
@@ -97,7 +118,7 @@ Every status (requests, lead stages, proposals, projects, tasks, invoices, conve
 ## Routes
 
 - Public: `/`, `/services`, `/services/[slug]`, `/portfolio`, `/about`, `/contact`, `/cart`
-- Accounts: `/auth`, `/dashboard`, `/messages`, `/project/[id]`
+- Accounts: `/auth` (log in, sign up, forgot password), `/auth/reset` (choose a new password), `/dashboard`, `/messages`, `/project/[id]`
 - Admin: `/admin` and its sub-pages, `/admin/login`
 - Generated: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/manifest.webmanifest`, `/opengraph-image`
 

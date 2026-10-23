@@ -16,7 +16,7 @@ This is a chronological record of decisions evidenced by repository history, cur
 
 - **Decision:** Use `@supabase/ssr` with a browser client, server client, and proxy (formerly middleware) session refresh.
 - **Why it appears to have been made:** The application needs browser auth plus server-side authenticated page/API access.
-- **Current implementation:** `backend/supabase/client.ts` calls `createBrowserClient`; `backend/supabase/server.ts` calls `createServerClient` with `next/headers` cookies; `middleware.ts` calls `auth.getUser()` and refreshes cookies.
+- **Current implementation:** `backend/supabase/client.ts` calls `createBrowserClient`; `backend/supabase/server.ts` calls `createServerClient` with `next/headers` cookies; `src/proxy.ts` calls `auth.getClaims()` and refreshes cookies. Server pages and API routes read the signed-in user with `getSessionUser()` (`backend/supabase/session.ts`), which also uses `getClaims()`: the project signs tokens with an ES256 key, so tokens are verified locally instead of with a request to Supabase Auth each time (October 2026). Public data (settings, service catalog) uses the cookie-free `backend/supabase/public.ts`, so public pages can be cached.
 - **Files/components affected:** `backend/supabase/client.ts`, `backend/supabase/server.ts`, `src/proxy.ts`, auth/dashboard/admin/API routes.
 - **Known trade-offs:** Authentication depends on correctly configured Supabase environment variables and redirect URLs; missing values are not proactively validated in code.
 - **Evidence/source:** Those files and `README.md` setup instructions.
@@ -52,13 +52,13 @@ This is a chronological record of decisions evidenced by repository history, cur
 - **Evidence/source:** Current source and schema.
 - **Reason status:** **Inferred** from the feature implementation and README language.
 
-## 6. Add an authenticated project-request API
+## 6. One project-request API for clients and guests
 
-- **Decision:** Use `/api/contact` as the authenticated request insertion endpoint.
-- **Why it appears to have been made:** Contact/project requests must be associated with the logged-in user and company while remaining behind a server route.
-- **Current implementation:** The route calls `auth.getUser()`, parses JSON, validates service/message/budget lengths, looks up the profile company, and inserts into `project_requests`.
+- **Decision:** Use `/api/contact` for every enquiry: signed-in clients get a workspace conversation; visitors without an account send a guest enquiry and get replies by email (owner decision, October 2026).
+- **Why it was made:** Requiring an account before the first enquiry was likely losing leads.
+- **Current implementation:** The route validates the body, drops submissions that fill the hidden `website` field, then calls `submit_project_request()` (signed in: request, services, conversation, first message, and admin notification in one transaction) or `submit_guest_request()` (guests: re-validates every field, takes service names and prices from the catalog, 3 per email and 50 in total per hour). A database trigger limits clients to 10 requests an hour. The team email alert is sent with `after()`.
 - **Files/components affected:** `src/app/api/contact/route.ts`, `src/app/contact/page.tsx`, `src/app/cart/page.tsx`, `backend/supabase/schema.sql`.
-- **Known trade-offs:** The API accepts a free-form `service` string and free-form `message`; it does not provide a normalized quote model or separate fields for all cart form values.
+- **Known trade-offs:** Guest requests have no account or conversation, and are not linked to an account the guest creates later.
 - **Evidence/source:** Current route and schema.
 - **Reason status:** **Verified** for behavior; original product rationale is **Inferred**.
 
@@ -106,8 +106,8 @@ This is a chronological record of decisions evidenced by repository history, cur
 
 - **Decision:** Use a Midnight Navy (`#1B1E4A`), Warm Stone Grey (`#AFAEA2`), and Crimson Red (`#D21319`) palette, Source Serif 4 headings with Manrope text, and a short opening animation.
 - **Why it was made:** **Verified**: the owner asked for this colour combination, an opening animation, and a "good and formal" look (October 2026).
-- **Current implementation:** Design tokens are CSS variables at the top of `src/app/globals.css`; fonts load through `next/font` in `src/app/layout.tsx`. `frontend/components/site-intro.tsx` renders the intro and an inline `<head>` script that sets `html[data-intro]` before first paint (at most once per 30 minutes, public pages only, never for reduced motion or crawlers). Below-the-fold reveals use CSS scroll-driven animations inside `@supports`, so content never waits on JavaScript.
-- **Known trade-offs:** The intro adds about two seconds on a first visit; it is skippable by any click, scroll, or key press.
+- **Current implementation:** Design tokens are CSS variables at the top of `src/app/globals.css`; fonts load through `next/font` in `src/app/layout.tsx`. `frontend/components/site-intro.tsx` renders the intro and an inline `<head>` script that sets `html[data-intro]` before first paint. Since October 2026 the intro video plays on every full load of the homepage (and `/opening_animation_video`), never for reduced motion or crawlers; other pages do not render it or download the video. Below-the-fold reveals use CSS scroll-driven animations inside `@supports`, so content never waits on JavaScript.
+- **Known trade-offs:** The intro is a 10-second, 1.3 MB video on each homepage load; the Skip button, Escape, Space, or Enter skips it.
 
 ## 12. One source of truth for the team
 

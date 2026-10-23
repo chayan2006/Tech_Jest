@@ -15,6 +15,12 @@ export function AdminRequestActions({
 }) {
   const router = useRouter();
   const [status, setStatus] = useState(initialStatus);
+  const [serverStatus, setServerStatus] = useState(initialStatus);
+  // Follow the saved status after a refresh, for example when it was changed from the status menu.
+  if (initialStatus !== serverStatus) {
+    setServerStatus(initialStatus);
+    setStatus(initialStatus);
+  }
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 

@@ -9,6 +9,7 @@ import { AdminTaskForm } from "@/frontend/components/admin-task-form";
 import { AdminInvoiceForm } from "@/frontend/components/admin-invoice-form";
 import { AdminDocumentUpload } from "@/frontend/components/admin-document-upload";
 import { formatDate, formatMoney } from "@/lib/format";
+import { AdminAddSection } from "@/frontend/components/admin-add-section";
 
 export default async function AdminProjectDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -66,8 +67,8 @@ export default async function AdminProjectDetail({ params }: { params: Promise<{
             {request ? (
               <>
                 Client:{" "}
-                <Link href={`/admin/requests/${request.id}`}>{request.name ?? request.email ?? "client request"}</Link>{" "}
-                · {request.service}
+                <Link href={`/admin/requests/${request.id}`}>{request.name ?? request.email ?? "view request"}</Link> ·{" "}
+                {request.service}
               </>
             ) : (
               "Not linked to a client request, so no client can see this project."
@@ -124,7 +125,9 @@ export default async function AdminProjectDetail({ params }: { params: Promise<{
               <p>Break delivery into visible, trackable work.</p>
             </div>
           </div>
-          <AdminTaskForm projectId={project.id} />
+          <AdminAddSection label="+ New task" open={!tasks?.length}>
+            <AdminTaskForm projectId={project.id} />
+          </AdminAddSection>
         </section>
       </div>
       <div className="admin-detail-grid">
@@ -153,7 +156,9 @@ export default async function AdminProjectDetail({ params }: { params: Promise<{
               <p className="admin-message">No invoices yet.</p>
             )}
           </div>
-          <AdminInvoiceForm projectId={project.id} requestId={project.request_id} />
+          <AdminAddSection label="+ New invoice" open={!invoices?.length}>
+            <AdminInvoiceForm projectId={project.id} requestId={project.request_id} />
+          </AdminAddSection>
         </section>
         <section className="admin-panel">
           <div className="admin-panel-head">
@@ -191,7 +196,9 @@ export default async function AdminProjectDetail({ params }: { params: Promise<{
               <p className="admin-message">No documents yet.</p>
             )}
           </div>
-          <AdminDocumentUpload projectId={project.id} />
+          <AdminAddSection label="+ Upload a document" open={!documents.length}>
+            <AdminDocumentUpload projectId={project.id} />
+          </AdminAddSection>
         </section>
       </div>
     </AdminShell>

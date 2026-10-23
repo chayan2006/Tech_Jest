@@ -1,18 +1,25 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/backend/supabase/server";
 import { withDownloadLinks } from "@/backend/supabase/documents";
 import { MessageThread } from "@/frontend/components/message-thread";
 import { ProjectConversationStart } from "@/frontend/components/project-conversation-start";
+import { ProposalResponse } from "@/frontend/components/proposal-response";
 import { statusLabel } from "@/frontend/data/workflow";
 import { formatDate, formatMoney } from "@/lib/format";
 import Link from "next/link";
+import { getSessionUser } from "@/backend/supabase/session";
+
+// A private client page, so keep it out of search results.
+export const metadata: Metadata = {
+  title: "Your project",
+  robots: { index: false, follow: false },
+};
 
 export default async function ClientProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser(supabase);
   if (!user) redirect(`/auth?next=/project/${encodeURIComponent(id)}`);
   if (user.app_metadata?.role === "admin") redirect(`/admin/projects/${encodeURIComponent(id)}`);
   const { data: project } = await supabase
@@ -89,9 +96,10 @@ export default async function ClientProjectPage({ params }: { params: Promise<{ 
                   {proposals[0].amount !== null
                     ? formatMoney(proposals[0].amount, proposals[0].currency)
                     : "Amount to be confirmed"}{" "}
-                  · {statusLabel("proposal", proposals[0].status)}
+                  · {statusLabel("proposal", proposals[0].status, "client")}
                   {proposals[0].valid_until ? ` · valid until ${formatDate(proposals[0].valid_until)}` : ""}
                 </strong>
+                {proposals[0].status === "sent" && <ProposalResponse proposalId={proposals[0].id} />}
               </>
             ) : (
               <p className="admin-message">No proposal published yet.</p>

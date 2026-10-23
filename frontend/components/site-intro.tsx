@@ -10,8 +10,7 @@ export const introScript = `(() => {
   try {
     const p = location.pathname;
     const isOpening = p === '/' || p === '' || p === '/opening_animation_video';
-    const isReplay = location.search.includes('intro');
-    if (!isOpening && !isReplay) return;
+    if (!isOpening) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     if (navigator.webdriver || /bot|crawl|spider|slurp|lighthouse|headless/i.test(navigator.userAgent)) return;
     root.dataset.intro = "play";
@@ -23,6 +22,11 @@ export const introScript = `(() => {
     return;
   }
 })();`;
+
+// The only pages the intro can play on.
+function isIntroPage(pathname: string) {
+  return pathname === "/" || pathname === "/opening_animation_video";
+}
 
 export function SiteIntro() {
   const pathname = usePathname();
@@ -62,11 +66,8 @@ export function SiteIntro() {
   }, []);
 
   useEffect(() => {
-    // Only play on opening page (root '/') or explicit intro page/query
-    const isOpening = pathname === "/" || pathname === "/opening_animation_video";
-    const isReplay = typeof window !== "undefined" && window.location.search.includes("intro");
-
-    if (!isOpening && !isReplay) {
+    // Only play on the opening pages ("/?intro=1" replays it on the homepage).
+    if (!isIntroPage(pathname)) {
       revealWebsite();
       return;
     }
@@ -113,7 +114,8 @@ export function SiteIntro() {
     };
   }, [pathname, revealWebsite]);
 
-  if (!active) return null;
+  // Other pages never render the overlay, so their visitors do not download the 5 MB video.
+  if (!active || !isIntroPage(pathname)) return null;
 
   return (
     <div id="intro-loader" ref={loaderRef} aria-label="TechJest opening animation">

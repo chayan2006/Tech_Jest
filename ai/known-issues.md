@@ -70,7 +70,7 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Current behavior:** A database failure can appear as no requests, missing profile data, or a successful login without a visible profile-sync warning.
 - **Expected behavior:** The exact error UX is **NOT VERIFIED**, but operational failures should be distinguishable from genuinely empty data.
 - **Possible impact:** Silent data loss perception, difficult diagnosis, and misleading admin/client views.
-- **Status:** Open.
+- **Status:** Partly resolved (2026-10-22): the dashboard shows an error instead of "No requests yet" when requests cannot load, and the OAuth callback reports profile-setup failures. Audit-insert errors are still ignored.
 - **Recommended next investigation/fix:** Define error states and logging policy, then add targeted handling without exposing provider internals.
 
 ## 7. Environment variables are asserted rather than validated at startup
@@ -215,13 +215,13 @@ These items are documented only; no issue was fixed during this task. Severity r
 
 - **Issue:** `/api/contact` returns 401 for signed-out visitors, so the contact form and cart quote ask visitors to sign up first.
 - **Severity:** Medium (conversion)
-- **Status:** Product decision for the owner; email and WhatsApp remain the no-account routes.
+- **Status:** Resolved (October 2026): guests can send enquiries through `submit_guest_request()`; the team replies by email.
 
 ## 20. No email alert for new enquiries
 
 - **Issue:** New requests are only visible in the admin console; nobody is notified by email.
 - **Severity:** Medium
-- **Status:** Needs an email provider account (for example Resend) and a receiving inbox from the owner.
+- **Status:** Built (October 2026) in `backend/email/team-alert.ts`; turns on once `RESEND_API_KEY` and `ALERT_EMAIL_TO` are set in Vercel.
 
 ## 21. Instant message updates are off in production
 
@@ -229,3 +229,49 @@ These items are documented only; no issue was fixed during this task. Severity r
 - **Severity:** Low
 - **Evidence:** `pg_publication_tables` returned no rows (October 2026).
 - **Status:** Fix prepared in `backend/supabase/migrations/2026-10-07-live-messages-and-indexes.sql` (also revokes API access to `handle_new_user()` and adds three indexes); needs the owner's approval to run on production.
+
+## 22. Fixed in the 2026-10-22 audit (verified on a local Supabase copy)
+
+- **Next.js 16.3.7 security advisories** (cache poisoning, image-optimizer SSRF/RCE, Server Actions DoS): upgraded to 16.4.2. Vitest moved to 5.0.5 for dev-only advisories. `npm audit`: 0 vulnerabilities.
+- **Google sign-in overwrote saved profiles:** `/auth/callback` upserted the profile on every login, resetting phone, company, and purpose. It now only creates a missing profile.
+- **Row Level Security gaps** (fix in `migrations/2026-10-22-security-hardening.sql`, mirrored in `schema.sql`): clients could create requests already marked completed/won, record `admin_login` audit events, open a conversation on another client's request (blocking that client's own thread), join a conversation as `admin`, and point their profile at another company. The first four were reproduced against the old policies; all five are blocked by the new ones (21 policy checks pass).
+- **`migrations/sync-all.sql`** defined `service_catalog` differently from `schema.sql`, failed on a fresh database despite saying it was safe there, and added a looser duplicate audit-log policy. It now matches `schema.sql`, and its header says it is for existing databases only.
+- **Password reset was missing:** `/auth` has "Forgot your password?", and `/auth/reset` sets the new password (also linked from the dashboard as "Change password"). Clients can edit their name, phone, and purpose from the dashboard.
+- **Smaller fixes:** malformed ids in conversation and admin APIs return 404/400 instead of 500. Contact and recommendation APIs check sign-in before reading the catalog. Service JSON-LD escapes `<`. The intro video no longer downloads on pages that never play it. Removed the unused `clsx` dependency.
+
+## 23. Fixed in the 2026-10-23 follow-up (verified on a local Supabase copy)
+
+- **Request submission is atomic:** `/api/contact` calls `submit_project_request()`, which saves the request, services, conversation, participant, first message, and admin notification in one transaction. A failure part-way saves nothing.
+- **Database-side request limit:** a trigger allows 10 requests per client per hour, through the API or directly. The in-memory limit in `src/proxy.ts` remains a first, per-instance guard.
+- **Sign-ins are logged by the database:** the `record_auth_event` trigger on `auth.users` logs sign-ups, logins, and admin logins (including Google and password-reset sign-ins, which were never logged before). Browsers can no longer write to `audit_logs`. IP addresses are still not recorded.
+- **Unread counts are summed in the database** (`unread_message_counts()`), so they stay exact past 1,000 messages.
+- **Admin console:** fits phone screens (it was 722px too wide); the service editor accepts new lines and commas while typing; adding a service with a slug that is already taken no longer replaces that service; a malformed request link shows "not found" instead of a database error; request action buttons follow status changes; project target dates cannot be before start dates.
+- **Cart quote form** keeps what the visitor typed while they log in or sign up.
+- **Missing Supabase settings** are reported once in the server log at startup.
+
+## 24. Fixed in the 2026-10-23 improvements (verified on a local Supabase copy)
+
+- **Intro video** re-encoded from 5.2 MB to 1.3 MB (H.264, CRF 28, no audio track; SSIM 0.984 against the original). Homepage weight 5.4 MB → 1.7 MB, `/services` 5.3 MB → 0.36 MB.
+- **Public pages are cached:** the root layout no longer reads the session, so home, services, service pages, about, contact, cart, portfolio, privacy, terms, and the sitemap are served from the CDN (`s-maxage=300`). The header's signed-in parts come from `AccountProvider` in the browser. Admin saves call `/api/admin/revalidate`.
+- **Fewer auth round trips:** `getClaims()` (verified locally with the project's ES256 key) replaces `getUser()` in the proxy, admin pages, and API routes. Admin pages render one notification bell instead of two.
+- **Pagination** on Admin → Requests and Admin → People (25 per page).
+- **Email alerts** for every new request through Resend, sent after the response (`after()`), with Reply-To set to the client.
+- **Guest enquiries** (see item 19) with a hidden bot field, 3 per email address and 50 in total per hour.
+- **Google sign-in** is offered on the Create account screen too.
+
+## 25. Admin ↔ client connection and phone layout (2026-10-23, verified locally)
+
+- **Clients answer proposals:** Accept/Decline on the dashboard and project page (`respond_to_proposal()` in the 2026-10-23 migration). The team gets a notification, an email alert, and a note in the conversation; accepting moves the lead to Won. Expired, draft, already-answered, and other clients' proposals are refused.
+- **Client dashboard:** a "Needs your attention" box (unread messages, proposals to answer, invoices due); correct singular/plural counts.
+- **Email:** the team is emailed when a client writes; clients are emailed when the team replies, once `ALERT_EMAIL_FROM` is on a verified domain.
+- **Phone layout:** the admin console starts with its tabs (current tab scrolled into view); stats two per row; create forms fold away once their list has items; CRM stages scroll inside their columns; message threads open at the newest message with the reply box in reach; larger tap targets.
+- **Fixed:** the bell did not update after marking notifications read; "Remove data" stayed stuck on a network error.
+
+## 26. Still open
+
+- **Lighthouse's simulated mobile scores** cannot be compared between localhost and Vercel. Locally, the old and new code both score 93–95 (LCP about 3.1 s, simulated); on the live site the old code scores 96–97. Re-measure on the live site after deploying.
+- **Headless Chrome can leave prefetches of cached pages pending** after a full page load cuts off the previous page's prefetches (the browser's HTTP cache, not the server: the same request is answered in 2 ms). Clicking links is not affected (58 ms in testing). Tests avoid waiting for network silence.
+- **Unbounded admin lists:** CRM, proposals, projects, and invoices load every row. Fine at today's volume; the CRM's profile lookup sends every client id in one URL and will need batching past a few hundred clients.
+- **Guest requests are not linked to an account** if the guest signs up later with the same email.
+- **No IP address in the activity log** (the database trigger cannot see it).
+- **No online invoice payment;** clients see invoices but pay outside the site.

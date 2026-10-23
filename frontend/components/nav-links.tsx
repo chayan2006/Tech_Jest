@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAccount } from "@/frontend/components/account";
 
 const links: readonly (readonly [string, string])[] = [
   ["Services", "/services"],
@@ -11,8 +12,9 @@ const links: readonly (readonly [string, string])[] = [
   ["Login", "/auth"],
 ];
 
-export function NavLinks({ signedIn }: { signedIn: boolean }) {
+export function NavLinks() {
   const pathname = usePathname();
+  const signedIn = Boolean(useAccount().account);
   return (
     <nav className="nav-links" aria-label="Main navigation">
       {links

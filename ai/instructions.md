@@ -71,7 +71,8 @@
 
 ## Deployment and release precautions
 
-- GitHub Actions verifies typecheck and production build only. It does not deploy the application.
+- GitHub Actions runs `npm run check` (typecheck, unit tests, format, build) and the Playwright browser tests against a throwaway local Supabase (see `docs/ci-cd.md`). It does not deploy; Vercel deploys `main` to production.
+- Run new SQL in `backend/supabase/migrations/` on the live database before deploying code that depends on it.
 - The README describes Vercel Git integration as the intended continuous-deployment path, but the actual Vercel project, domains, environment values, and deployment health are **UNKNOWN / NOT VERIFIED** from this repository.
 - Production configuration must include the variables documented in `.env.example`/`README.md`, with a real `NEXT_PUBLIC_SITE_URL`. The actual production values are **UNKNOWN / NOT VERIFIED**.
 - Apply and verify `backend/supabase/schema.sql` in the intended Supabase project before relying on admin audit/request features. The remote schema state is **UNKNOWN / NOT VERIFIED** during this documentation task.

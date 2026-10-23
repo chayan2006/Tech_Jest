@@ -3,8 +3,8 @@ import { getSiteUrl } from "@/lib/site-url";
 import { ServiceMarketplace } from "@/frontend/components/service-marketplace";
 import { getServices } from "@/backend/supabase/services";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Cached like the other public pages; saving in Admin → Services refreshes it straight away.
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: "IT Services Marketplace",

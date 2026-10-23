@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/backend/supabase/server";
 import { getServices } from "@/backend/supabase/services";
+import { getSessionUser } from "@/backend/supabase/session";
 
 export async function POST(request: Request) {
   const supabase = await createClient();
+  const user = await getSessionUser(supabase);
+  if (!user) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   const services = await getServices({ fallbackOnMissingTable: false });
   if (!services.length)
     return NextResponse.json({ error: "The service catalog is temporarily unavailable." }, { status: 503 });
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
   let body: unknown;
   try {
     body = await request.json();

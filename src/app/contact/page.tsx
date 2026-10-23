@@ -1,14 +1,9 @@
-import { createClient } from "@/backend/supabase/server";
 import { getSiteSettings, whatsappLink } from "@/backend/supabase/site-settings";
 import { ContactForm } from "@/frontend/components/contact-form";
-import { findServiceArea } from "@/frontend/data/service-areas";
 
-export default async function Contact({ searchParams }: { searchParams: Promise<{ service?: string | string[] }> }) {
-  const [{ service }, supabase, settings] = await Promise.all([searchParams, createClient(), getSiteSettings()]);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const initialService = findServiceArea(typeof service === "string" ? service : undefined)?.title ?? "";
+// Cached like the other public pages: the form reads ?service= and the session in the browser.
+export default async function Contact() {
+  const settings = await getSiteSettings();
   const whatsappHref = whatsappLink(settings.whatsapp_number);
   return (
     <>
@@ -22,7 +17,7 @@ export default async function Contact({ searchParams }: { searchParams: Promise<
       <section className="section">
         <div className="container contact-grid">
           <div>
-            <ContactForm signedIn={Boolean(user)} initialService={initialService} />
+            <ContactForm />
           </div>
           <aside className="contact-side">
             <div className="eyebrow">Contact</div>

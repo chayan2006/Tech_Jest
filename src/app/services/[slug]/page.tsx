@@ -4,9 +4,15 @@ import { notFound } from "next/navigation";
 import { getServices } from "@/backend/supabase/services";
 import { AddToCartButton } from "@/frontend/components/service-cart";
 import { getSiteUrl } from "@/lib/site-url";
+import { jsonLd } from "@/lib/json-ld";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+// Each service page is built on its first visit, then cached; saving in Admin → Services refreshes it.
+export const revalidate = 300;
+
+// No pages at build time (the catalog lives in the database); each one is built on its first visit.
+export function generateStaticParams() {
+  return [];
+}
 
 const data: Record<string, { title: string; intro: string; benefits: string[]; deliverables: string[] }> = {
   "web-development": {
@@ -164,8 +170,8 @@ export default async function Service({ params }: { params: Promise<{ slug: stri
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbSchema) }} />
       <section className="page-hero">
         <div className="container service-detail-hero">
           <div className="eyebrow">

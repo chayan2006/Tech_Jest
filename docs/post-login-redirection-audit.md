@@ -19,7 +19,7 @@ This document records the architectural security audit for post-authentication r
 
 ## 2. Security Validation Layer (`safeNextPath`)
 
-Located in [`src/lib/safe-next-path.ts`](file:///Users/chayankhatua/Documents/TechJest/TechJest_W/src/lib/safe-next-path.ts):
+Located in [`src/lib/safe-next-path.ts`](../src/lib/safe-next-path.ts):
 
 - **Protocol-Relative Exploit Protection**: Rejects paths beginning with `//`.
 - **Backslash Path Confusion Protection**: Rejects paths containing `\`, which browsers often normalize to `/` to navigate cross-origin.
@@ -33,24 +33,22 @@ Located in [`src/lib/safe-next-path.ts`](file:///Users/chayankhatua/Documents/Te
 In the [Supabase Management Console](https://supabase.com/dashboard):
 
 1. Navigate to **Authentication** → **URL Configuration**.
-2. Set **Site URL**:
-   - Production: `https://tech-jest-12.vercel.app` (or your primary custom domain `https://techjest.in`)
-   - Local: `http://localhost:3000`
-3. In **Redirect URLs**, add the following entries (notice the trailing wildcard `*`):
+2. Set **Site URL** to the production address: `https://tech-jest-12.vercel.app` (or the custom domain once it is live, for example `https://techjest.in`).
+3. In **Redirect URLs**, add only addresses TechJest controls, each ending in `**` so query strings such as `?next=/cart` and `?next=/auth/reset` are accepted:
    ```text
-   http://localhost:3000/auth/callback*
-   https://tech-jest-12.vercel.app/auth/callback*
-   https://*.vercel.app/auth/callback*
-   https://techjest.in/auth/callback*
+   http://localhost:3000/auth/callback**
+   https://tech-jest-12.vercel.app/auth/callback**
+   https://techjest.in/auth/callback**
    ```
 
 > [!IMPORTANT]
-> The trailing wildcard `*` is mandatory. Because queries like `?next=/cart` are passed to `/auth/callback`, omitting the wildcard causes Supabase to reject OAuth callbacks with `redirect_uri_mismatch`.
+> Never add a pattern such as `https://*.vercel.app/**`. It would also match sites other people deploy on Vercel, so a crafted sign-in, sign-up, or password-reset link could send a user's session to them. To test a preview deployment, add that one preview address and remove it afterwards.
 
 ---
 
 ## 4. Automated Verification
 
 Unit and regression tests for safe redirect handling are maintained in:
-- [`src/lib/lib.test.ts`](file:///Users/chayankhatua/Documents/TechJest/TechJest_W/src/lib/lib.test.ts)
-- [`src/lib/user-flows.test.ts`](file:///Users/chayankhatua/Documents/TechJest/TechJest_W/src/lib/user-flows.test.ts)
+- [`src/lib/lib.test.ts`](../src/lib/lib.test.ts) and [`src/lib/user-flows.test.ts`](../src/lib/user-flows.test.ts): `safeNextPath` and `getLoginDestination` (`src/lib/login-destination.ts`)
+- [`src/app/routes.test.ts`](../src/app/routes.test.ts): `/auth/callback` keeps the redirect on this site
+- [`e2e/account.spec.ts`](../e2e/account.spec.ts) and [`e2e/requests.spec.ts`](../e2e/requests.spec.ts): sign-up, password reset, and returning to the cart after logging in, in a real browser

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CartLink } from "@/frontend/components/service-cart";
+import { useAccount } from "@/frontend/components/account";
 import { CloseIcon, MenuIcon } from "@/frontend/components/icons";
 
 const links: readonly (readonly [string, string])[] = [
@@ -12,8 +13,11 @@ const links: readonly (readonly [string, string])[] = [
   ["Contact", "/contact"],
 ];
 
-export function MobileMenu({ signedIn = false, admin = false }: { signedIn?: boolean; admin?: boolean }) {
+export function MobileMenu() {
   const [open, setOpen] = useState(false);
+  const { account } = useAccount();
+  const signedIn = Boolean(account);
+  const admin = account?.admin ?? false;
   const accountLinks: readonly (readonly [string, string])[] = signedIn
     ? [
         [admin ? "Admin console" : "My dashboard", admin ? "/admin" : "/dashboard"],

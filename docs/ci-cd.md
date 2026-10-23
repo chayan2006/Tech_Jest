@@ -1,56 +1,34 @@
-# CI/CD Documentation
+# CI/CD
 
-This document provides an overview of the continuous integration and deployment pipeline for the **TechJest** project.
+## GitHub Actions (`.github/workflows/ci.yml`)
 
-## GitHub Actions Workflow (`.github/workflows/ci.yml`)
+Runs on every pull request and every push to `main`. A newer run on the same branch cancels the older one.
 
-- **Trigger**: Runs on every `push` to the `main` branch and on every pull request.
-- **Jobs**:
-  - **verify**:
-    - **Environment**: `ubuntu-latest`
-    - **Steps**:
-      1. **Checkout** – Retrieves the repository code.
-      2. **Setup Node.js** – Uses the version defined in `.nvmrc` and caches `npm` modules.
-      3. **Install dependencies** – Executes `npm ci` for a clean install.
-      4. **Verify application** – Runs `npm run check`, which performs:
-         - Type‑checking (`tsc --noEmit`)
-         - Production build (`next build`)
-         - Code formatting check (`prettier --check .`)
-- **Timeout**: 15 minutes per run.
-- **Concurrency**: Cancels previous runs for the same branch to avoid redundant builds.
+| Job | What it does |
+| --- | --- |
+| **Typecheck and production build** (`verify`, 15 min limit) | `npm ci`, then `npm run check`: TypeScript, unit and API tests (Vitest), Prettier format check, and a production build. |
+| **Browser tests** (`e2e`, 30 min limit) | `npm ci`, installs Chrome, starts a throwaway Supabase in Docker with `schema.sql`, the seed, and every migration (`npm run e2e:db`), then runs the Playwright tests (`npm run test:e2e`). On failure the HTML report is kept as a build artifact for 7 days. |
 
-## Local Development Workflow
+Neither job uses real credentials or touches the live database.
 
-1. **Install dependencies**
-   ```bash
-   npm ci
-   ```
-2. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-3. **Run tests** (Vitest)
-   ```bash
-   npm test
-   ```
-4. **Check formatting**
-   ```bash
-   npm run format:check
-   ```
+## Deployments (Vercel)
 
-## Deployments
+- A push to `main` deploys to production (`https://tech-jest-12.vercel.app`).
+- A pull request gets its own preview deployment.
+- `vercel.json` runs the server code in Mumbai (`bom1`), next to the Supabase database (`ap-south-1`).
+- Environment variables are set in Vercel → Settings → Environment Variables (see `.env.example` and the README).
+- Database changes are not deployed automatically: run new files in `backend/supabase/migrations/` in the Supabase SQL Editor before deploying the code that needs them.
 
-The repository is configured for **Vercel** deployment (see `vercel.json`). Every push to `main` triggers a Vercel preview, and merges trigger a production deployment.
+## Running the same checks locally
 
-## Adding New CI Steps
-
-If you need to add more checks (e.g., linting, security scanning, or end‑to‑end tests), extend the `ci.yml` workflow:
-```yaml
-- name: Lint code
-  run: npm run lint
+```bash
+npm ci
+npm run check          # typecheck, unit tests, format check, build
+npm run e2e:db         # needs Docker Desktop running
+npm run test:e2e
+npm run e2e:db:stop
 ```
-Ensure any new script is added to `package.json` under the `scripts` section.
 
----
+## Dependency updates
 
-*Feel free to modify this documentation to match any future changes in the CI/CD pipeline.*
+Dependabot (`.github/dependabot.yml`) opens monthly pull requests for npm packages and GitHub Actions; CI runs on each.

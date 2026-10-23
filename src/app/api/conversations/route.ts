@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/backend/supabase/server";
+import { isUuid } from "@/lib/uuid";
+import { getSessionUser } from "@/backend/supabase/session";
 
 export async function GET() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser(supabase);
   if (!user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const isAdmin = user.app_metadata?.role === "admin";
   const query = supabase
@@ -19,18 +19,18 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser(supabase);
   if (!user) return NextResponse.json({ error: "Authentication required." }, { status: 401 });
   const body = (await request.json().catch(() => null)) as {
     title?: unknown;
     requestId?: unknown;
     projectId?: unknown;
   } | null;
-  const title = typeof body?.title === "string" ? body.title.trim().slice(0, 160) : "TechJest conversation";
-  const requestId = typeof body?.requestId === "string" ? body.requestId : null;
-  const projectId = typeof body?.projectId === "string" ? body.projectId : null;
+  const title = (typeof body?.title === "string" && body.title.trim().slice(0, 160)) || "TechJest conversation";
+  const requestId = body?.requestId ?? null;
+  const projectId = body?.projectId ?? null;
+  if ((requestId !== null && !isUuid(requestId)) || (projectId !== null && !isUuid(projectId)))
+    return NextResponse.json({ error: "Invalid request or project id." }, { status: 400 });
   if (requestId) {
     const { data: requestRow, error: requestError } = await supabase
       .from("project_requests")

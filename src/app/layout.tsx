@@ -8,12 +8,11 @@ import { NavLinks } from "@/frontend/components/nav-links";
 import { SiteIntro, introScript } from "@/frontend/components/site-intro";
 import { ChatIcon } from "@/frontend/components/icons";
 import { team, type TeamMember } from "@/frontend/data/team";
-import { ProfileBadge } from "@/frontend/components/profile-badge";
-import { createClient } from "@/backend/supabase/server";
+import { AccountBadge, AccountProvider, NotificationBell } from "@/frontend/components/account";
 import { CartLink } from "@/frontend/components/service-cart";
-import { MessageNotification } from "@/frontend/components/message-notification";
 import { getSiteUrl } from "@/lib/site-url";
 import { getSiteSettings, whatsappLink } from "@/backend/supabase/site-settings";
+import { jsonLd } from "@/lib/json-ld";
 
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
 // Headings only use the 600 weight, so one static file keeps the download small.
@@ -82,23 +81,15 @@ export const metadata: Metadata = {
   },
 };
 
+// Public pages are rebuilt at most every 5 minutes and served from the CDN in between. Pages that read
+// the session (dashboard, admin) still render per request. Admin edits refresh them straight away
+// through /api/admin/revalidate.
+export const revalidate = 300;
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const supabase = await createClient();
-  // The session check and the public settings read are independent, so run them together.
-  const [
-    {
-      data: { user },
-    },
-    settings,
-  ] = await Promise.all([supabase.auth.getUser(), getSiteSettings()]);
-  const profileName =
-    typeof user?.user_metadata?.full_name === "string"
-      ? user.user_metadata.full_name
-      : typeof user?.user_metadata?.name === "string"
-        ? user.user_metadata.name
-        : undefined;
-  const avatarUrl = typeof user?.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : undefined;
-  const isAdmin = user?.app_metadata?.role === "admin";
+  // No session read here: it would make every page per-visitor. AccountProvider fills in the
+  // signed-in parts of the header in the browser.
+  const settings = await getSiteSettings();
   const contactEmail = settings.contact_email;
   const whatsappHref = whatsappLink(settings.whatsapp_number);
   const whatsappChatHref = whatsappLink(settings.whatsapp_number, "Hi TechJest, I'd like to discuss a project.");
@@ -175,112 +166,114 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
       <body>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(organizationSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema) }} />
         <SiteIntro />
-        <a className="skip" href="#main">
-          Skip to content
-        </a>
-        <header className="site-header">
-          <div className="container nav">
-            <div className="nav-left">
-              <Link className="logo" href="/">
-                <Image
-                  className="brand-image"
-                  src="/images/techjest-brand.png"
-                  alt="TechJest"
-                  width={138}
-                  height={92}
-                />
-              </Link>
-              {user && <ProfileBadge email={user.email} name={profileName} avatarUrl={avatarUrl} admin={isAdmin} />}
-            </div>
-            <NavLinks signedIn={Boolean(user)} />
-            <div className="nav-actions">
-              {user && <MessageNotification userId={user.id} admin={isAdmin} />}
-              <CartLink />
-              <Link className="btn btn-primary" href="/contact">
-                Book a consultation
-              </Link>
-              <MobileMenu signedIn={Boolean(user)} admin={isAdmin} />
-            </div>
-          </div>
-        </header>
-        <main id="main">{children}</main>
-        <footer className="footer">
-          <div className="container">
-            <div className="footer-grid">
-              <div>
+        <AccountProvider>
+          <a className="skip" href="#main">
+            Skip to content
+          </a>
+          <header className="site-header">
+            <div className="container nav">
+              <div className="nav-left">
                 <Link className="logo" href="/">
                   <Image
-                    className="brand-image footer-brand"
+                    className="brand-image"
                     src="/images/techjest-brand.png"
                     alt="TechJest"
                     width={138}
                     height={92}
                   />
                 </Link>
-                <p>Practical technology for ambitious teams. Built with clarity, shipped with care.</p>
+                <AccountBadge />
               </div>
-              <div>
-                <h2>Explore</h2>
-                <p>
-                  <Link href="/services">Services</Link>
-                  <br />
-                  <Link href="/portfolio">Our work</Link>
-                  <br />
-                  <Link href="/about">About us</Link>
-                  <br />
-                  <Link href="/privacy">Privacy policy</Link>
-                  <br />
-                  <Link href="/terms">Terms of service</Link>
-                </p>
-              </div>
-              <div>
-                <h2>Start a project</h2>
-                <p>
-                  <Link href="/contact">Book a consultation</Link>
-                  <br />
-                  <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
-                  {whatsappHref && (
-                    <>
-                      <br />
-                      <a href={whatsappHref}>WhatsApp</a>
-                    </>
-                  )}
-                  <br />
-                  <a
-                    href="https://instagram.com/techjest_"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="TechJest on Instagram"
-                  >
-                    Instagram
-                  </a>
-                </p>
-              </div>
-              <div>
-                <h2>Principles</h2>
-                <p>
-                  Clear scope
-                  <br />
-                  Useful software
-                  <br />
-                  Long-term thinking
-                </p>
+              <NavLinks />
+              <div className="nav-actions">
+                <NotificationBell />
+                <CartLink />
+                <Link className="btn btn-primary" href="/contact">
+                  Book a consultation
+                </Link>
+                <MobileMenu />
               </div>
             </div>
-            <div className="footer-bottom">© {new Date().getFullYear()} TechJest. Built for what’s next.</div>
-          </div>
-        </footer>
-        {/* A labelled landmark, so screen-reader users can find the floating chat button. */}
-        {whatsappChatHref && (
-          <aside aria-label="WhatsApp chat">
-            <a className="whatsapp" href={whatsappChatHref} aria-label="Chat with us on WhatsApp">
-              <ChatIcon />
-            </a>
-          </aside>
-        )}
+          </header>
+          <main id="main">{children}</main>
+          <footer className="footer">
+            <div className="container">
+              <div className="footer-grid">
+                <div>
+                  <Link className="logo" href="/">
+                    <Image
+                      className="brand-image footer-brand"
+                      src="/images/techjest-brand.png"
+                      alt="TechJest"
+                      width={138}
+                      height={92}
+                    />
+                  </Link>
+                  <p>Practical technology for ambitious teams. Built with clarity, shipped with care.</p>
+                </div>
+                <div>
+                  <h2>Explore</h2>
+                  <p>
+                    <Link href="/services">Services</Link>
+                    <br />
+                    <Link href="/portfolio">Our work</Link>
+                    <br />
+                    <Link href="/about">About us</Link>
+                    <br />
+                    <Link href="/privacy">Privacy policy</Link>
+                    <br />
+                    <Link href="/terms">Terms of service</Link>
+                  </p>
+                </div>
+                <div>
+                  <h2>Start a project</h2>
+                  <p>
+                    <Link href="/contact">Book a consultation</Link>
+                    <br />
+                    <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
+                    {whatsappHref && (
+                      <>
+                        <br />
+                        <a href={whatsappHref}>WhatsApp</a>
+                      </>
+                    )}
+                    <br />
+                    <a
+                      href="https://instagram.com/techjest_"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="TechJest on Instagram"
+                    >
+                      Instagram
+                    </a>
+                  </p>
+                </div>
+                <div>
+                  <h2>Principles</h2>
+                  <p>
+                    Clear scope
+                    <br />
+                    Useful software
+                    <br />
+                    Long-term thinking
+                  </p>
+                </div>
+              </div>
+              <div className="footer-bottom">© {new Date().getFullYear()} TechJest. Built for what’s next.</div>
+            </div>
+          </footer>
+          {/* A labelled landmark, so screen-reader users can find the floating chat button. */}
+          {whatsappChatHref && (
+            <aside aria-label="WhatsApp chat">
+              <a className="whatsapp" href={whatsappChatHref} aria-label="Chat with us on WhatsApp">
+                <ChatIcon />
+              </a>
+            </aside>
+          )}
+        </AccountProvider>
       </body>
     </html>
   );

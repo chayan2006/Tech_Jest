@@ -7,7 +7,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
         <div className="eyebrow">Something went wrong</div>
         <h1>We could not load this page.</h1>
         <p>Please try again. If the problem continues, contact the TechJest team.</p>
-        <button aria-label="Retry" className="btn btn-primary" onClick={() => reset()}>
+        <button className="btn btn-primary" onClick={() => reset()}>
           Try again
         </button>
       </div>

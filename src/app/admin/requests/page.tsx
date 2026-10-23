@@ -4,15 +4,29 @@ import { profilesById } from "@/backend/supabase/profiles";
 import { AdminShell } from "@/frontend/components/admin-shell";
 import { AdminStatusSelect } from "@/frontend/components/admin-status-select";
 import { formatDateTime } from "@/lib/format";
+import { pageFromParam, pageRange } from "@/lib/pagination";
+import { AdminPagination } from "@/frontend/components/admin-pagination";
 
-export default async function AdminRequestsPage() {
+export default async function AdminRequestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string | string[] }>;
+}) {
   const { supabase, user } = await requireAdmin();
-  const { data: requests, error } = await supabase
+  const page = pageFromParam((await searchParams).page);
+  const [from, to] = pageRange(page);
+  const {
+    data: requests,
+    count,
+    error,
+  } = await supabase
     .from("project_requests")
     .select(
       "id, service, message, budget, name, email, phone, company, budget_range, timeline, description, status, created_at, user_id",
+      { count: "exact" },
     )
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .range(from, to);
   const requestIds = requests?.map((request) => request.id) ?? [];
   const [profiles, { data: requestServices, error: requestServicesError }] = await Promise.all([
     profilesById(supabase, requests?.map((request) => request.user_id) ?? []),
@@ -39,7 +53,7 @@ export default async function AdminRequestsPage() {
           <h1>Consultation requests.</h1>
           <p className="lead">Every enquiry submitted through the TechJest website.</p>
         </div>
-        <span className="admin-count">{requests?.length ?? 0} total</span>
+        <span className="admin-count">{count ?? requests?.length ?? 0} total</span>
       </div>
       {loadError ? (
         <div className="empty-state">
@@ -81,6 +95,7 @@ export default async function AdminRequestsPage() {
                 )}
                 <div className="admin-customer">
                   <strong>{clientName}</strong>
+                  {!request.user_id && <span className="admin-status">Guest · reply by email</span>}
                   <span>{request.email ?? "Email unavailable"}</span>
                   <span>{request.company ?? profile?.company ?? "Independent project"}</span>
                   {(request.phone ?? profile?.phone) ? <span>{request.phone ?? profile?.phone}</span> : null}
@@ -94,10 +109,11 @@ export default async function AdminRequestsPage() {
         </div>
       ) : (
         <div className="empty-state">
-          <h2>No requests yet.</h2>
+          <h2>{page > 1 ? "No requests on this page." : "No requests yet."}</h2>
           <p>New consultation requests will appear here.</p>
         </div>
       )}
+      {!loadError && <AdminPagination page={page} total={count ?? 0} basePath="/admin/requests" />}
     </AdminShell>
   );
 }

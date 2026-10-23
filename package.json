@@ -10,25 +10,29 @@
     "check": "npm run typecheck && vitest --run && npm run format:check && npm run build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest"
+    "test": "vitest",
+    "test:e2e": "playwright test",
+    "e2e:db": "node e2e/start-supabase.mjs",
+    "e2e:db:stop": "node e2e/stop-supabase.mjs"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
-    "@supabase/supabase-js": "^2.117.2",
-    "next": "^16.3.7",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "clsx": "^2.1.0"
+    "@supabase/supabase-js": "^2.118.0",
+    "next": "^16.4.2",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "@types/node": "22.13.10",
-    "@types/react": "19.0.10",
-    "@types/react-dom": "19.0.4",
-    "prettier": "3.9.9",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "prettier": "3.9.10",
     "typescript": "5.8.2",
-    "vitest": "^1.5.0"
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   }
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { getCart, addToCart, removeFromCart } from "@/frontend/components/service-cart";
-import { safeNextPath } from "./safe-next-path";
+import { getLoginDestination } from "./login-destination";
 import { findServiceArea } from "@/frontend/data/service-areas";
 
 // Mock localStorage and window events for Node/Vitest environment
@@ -94,13 +94,6 @@ describe("Flow 2: Quote & Consultation Data Validation (/contact)", () => {
 });
 
 describe("Flow 3: Auth Redirection & Security Audit (/auth → /dashboard | /cart)", () => {
-  // Destination resolver matching src/app/auth/page.tsx
-  function getLoginDestination(user: { app_metadata?: { role?: string } } | null, next: string | null) {
-    const requestedPath = safeNextPath(next);
-    const role = user?.app_metadata?.role ?? null;
-    return role === "admin" && requestedPath === "/dashboard" ? "/admin" : requestedPath;
-  }
-
   it("routes regular clients to /dashboard by default", () => {
     const clientUser = { app_metadata: { role: "client" } };
     expect(getLoginDestination(clientUser, null)).toBe("/dashboard");

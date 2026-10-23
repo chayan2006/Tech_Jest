@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/backend/supabase/client";
+import { UNREAD_EVENT } from "@/frontend/components/account";
 import { BellIcon } from "@/frontend/components/icons";
 import { formatDateTime } from "@/lib/format";
 
@@ -22,14 +23,22 @@ export function AdminNotificationList({ initialNotifications }: { initialNotific
   const router = useRouter();
   const [items, setItems] = useState(initialNotifications);
   const [saving, setSaving] = useState<string | null>(null);
+  const [error, setError] = useState("");
 
   async function markRead(ids: string[], savingKey: string) {
     setSaving(savingKey);
+    setError("");
     const readAt = new Date().toISOString();
-    const { error } = await createClient().from("admin_notifications").update({ read_at: readAt }).in("id", ids);
-    if (!error) {
+    const { error: updateError } = await createClient()
+      .from("admin_notifications")
+      .update({ read_at: readAt })
+      .in("id", ids);
+    if (updateError) {
+      setError("Could not mark these as read. Please try again.");
+    } else {
       setItems((current) => current.map((item) => (ids.includes(item.id) ? { ...item, read_at: readAt } : item)));
-      // Updates the unread count in the sidebar.
+      // The header bell counts in the browser, so tell it to recount; refresh updates the page's own counts.
+      window.dispatchEvent(new Event(UNREAD_EVENT));
       router.refresh();
     }
     setSaving(null);
@@ -42,6 +51,11 @@ export function AdminNotificationList({ initialNotifications }: { initialNotific
         <div>
           <h2>Notifications</h2>
           <p>New service requests and important admin activity.</p>
+          {error && (
+            <p className="form-message" role="alert">
+              {error}
+            </p>
+          )}
         </div>
         <button
           className="btn btn-ghost"

@@ -3,9 +3,10 @@
 import { FormEvent, useState } from "react";
 import { useEffect } from "react";
 import { createClient } from "@/backend/supabase/client";
+import { getLoginDestination } from "@/lib/login-destination";
 import { safeNextPath } from "@/lib/safe-next-path";
 
-type Mode = "login" | "signup";
+type Mode = "login" | "signup" | "forgot";
 
 function requestedNextPath() {
   return safeNextPath(new URLSearchParams(window.location.search).get("next"));
@@ -14,13 +15,6 @@ function requestedNextPath() {
 function callbackUrl() {
   // Slashes stay readable so the default stays exactly "?next=/dashboard" for Supabase's redirect allow-list.
   return `${window.location.origin}/auth/callback?next=${encodeURIComponent(requestedNextPath()).replace(/%2F/gi, "/")}`;
-}
-
-function getLoginDestination(user: unknown, next: string | null) {
-  const requestedPath = safeNextPath(next);
-  const metadata = typeof user === "object" && user !== null && "app_metadata" in user ? user.app_metadata : null;
-  const role = typeof metadata === "object" && metadata !== null && "role" in metadata ? metadata.role : null;
-  return role === "admin" && requestedPath === "/dashboard" ? "/admin" : requestedPath;
 }
 
 function friendlyAuthError(message: string) {
@@ -46,7 +40,9 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    const error = new URLSearchParams(window.location.search).get("error");
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("mode") === "forgot") setMode("forgot");
+    const error = params.get("error");
     if (error === "oauth_callback") setMessage("Your sign-in link expired or could not be verified. Please try again.");
     if (error === "profile_setup")
       setMessage("Your account was created, but workspace setup failed. Please log in again.");
@@ -57,6 +53,19 @@ export default function AuthPage() {
     setBusy(true);
     setMessage("");
     const supabase = createClient();
+    if (mode === "forgot") {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset`,
+      });
+      setBusy(false);
+      // The same reply whether or not the email has an account, so the form cannot be used to look up accounts.
+      setMessage(
+        error && /rate limit/i.test(error.message)
+          ? friendlyAuthError(error.message)
+          : "If an account uses that email, a link to choose a new password is on its way. Open it in this browser.",
+      );
+      return;
+    }
     const result =
       mode === "login"
         ? await supabase.auth.signInWithPassword({ email, password })
@@ -83,15 +92,7 @@ export default function AuthPage() {
       setMode("login");
       return;
     }
-    if (mode === "login" && result.data.user) {
-      await supabase
-        .from("audit_logs")
-        .insert({ user_id: result.data.user.id, event: "login", email: result.data.user.email });
-    } else if (mode === "signup" && result.data.user) {
-      await supabase
-        .from("audit_logs")
-        .insert({ user_id: result.data.user.id, event: "signup", email: result.data.user.email });
-    }
+    // Sign-ins and sign-ups are added to the activity log by the database (record_auth_event).
     const next = new URLSearchParams(window.location.search).get("next");
     window.location.assign(getLoginDestination(result.data.user ?? {}, next));
   }
@@ -110,22 +111,32 @@ export default function AuthPage() {
     }
   }
 
-  function switchMode() {
+  function switchMode(next: Mode) {
     setMessage("");
-    setMode(mode === "login" ? "signup" : "login");
+    setMode(next);
   }
 
   return (
     <section className="auth-hero">
       <div className="container auth-shell">
-        <div className="eyebrow">{mode === "login" ? "Client portal" : "Create your workspace"}</div>
-        <h1>{mode === "login" ? "Welcome back." : "Let’s get to know your project."}</h1>
+        <div className="eyebrow">
+          {mode === "login" ? "Client portal" : mode === "signup" ? "Create your workspace" : "Account recovery"}
+        </div>
+        <h1>
+          {mode === "login"
+            ? "Welcome back."
+            : mode === "signup"
+              ? "Let’s get to know your project."
+              : "Reset your password."}
+        </h1>
         <p className="lead">
           {mode === "login"
             ? "Log in to see your requests, account details, and project history."
-            : "Create an account so your details, requests, and conversations stay organized in one private workspace."}
+            : mode === "signup"
+              ? "Create an account so your details, requests, and conversations stay organized in one private workspace."
+              : "Enter the email you signed up with and we’ll send you a link to choose a new password."}
         </p>
-        {mode === "login" && (
+        {mode !== "forgot" && (
           <>
             <button className="btn btn-google" type="button" onClick={signInWithGoogle} disabled={busy}>
               <span aria-hidden="true">G</span> Continue with Google
@@ -205,30 +216,47 @@ export default function AuthPage() {
               autoComplete="email"
             />
           </div>
-          <div className="field">
-            <label htmlFor="auth-password">Password</label>
-            <input
-              id="auth-password"
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-              minLength={8}
-              autoComplete={mode === "login" ? "current-password" : "new-password"}
-            />
-            <small>At least 8 characters.</small>
-          </div>
+          {mode !== "forgot" && (
+            <div className="field">
+              <label htmlFor="auth-password">Password</label>
+              <input
+                id="auth-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+                minLength={8}
+                autoComplete={mode === "login" ? "current-password" : "new-password"}
+              />
+              <small>At least 8 characters.</small>
+              {mode === "login" && (
+                <button type="button" className="text-button" onClick={() => switchMode("forgot")}>
+                  Forgot your password?
+                </button>
+              )}
+            </div>
+          )}
           {message && (
             <p role="alert" className="form-message">
               {message}
             </p>
           )}
           <button className="btn btn-primary" disabled={busy}>
-            {busy ? "Please wait…" : mode === "login" ? "Log in to workspace" : "Create my workspace"}
+            {busy
+              ? "Please wait…"
+              : mode === "login"
+                ? "Log in to workspace"
+                : mode === "signup"
+                  ? "Create my workspace"
+                  : "Send reset link"}
           </button>
         </form>
-        <button className="text-button" onClick={switchMode}>
-          {mode === "login" ? "New here? Create an account" : "Already have an account? Log in"}
+        <button type="button" className="text-button" onClick={() => switchMode(mode === "login" ? "signup" : "login")}>
+          {mode === "login"
+            ? "New here? Create an account"
+            : mode === "signup"
+              ? "Already have an account? Log in"
+              : "Back to log in"}
         </button>
       </div>
     </section>

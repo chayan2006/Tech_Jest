@@ -5,6 +5,7 @@ import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/backend/supabase/client";
 import { statusLabel } from "@/frontend/data/workflow";
+import { UNREAD_EVENT } from "@/frontend/components/account";
 
 type Conversation = { id: string; title: string; status: string; priority: string; last_message_at?: string | null };
 type Message = {
@@ -35,6 +36,14 @@ export function MessageThread({
   const [sending, setSending] = useState(false);
   // How many messages this view has seen, so a new arrival can refresh the status around the thread.
   const knownCount = useRef<number | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  // Whether the reader is at the newest message; if they scrolled up to read, new arrivals leave them there.
+  const atBottom = useRef(true);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (list && atBottom.current) list.scrollTop = list.scrollHeight;
+  }, [messages, loading]);
 
   async function load() {
     try {
@@ -44,6 +53,9 @@ export function MessageThread({
       setMessages(loaded);
       setLoadError("");
       if (knownCount.current !== null && loaded.length > knownCount.current) router.refresh();
+      // Loading marks the thread read, so the header bell recounts on first open and on new arrivals.
+      if (knownCount.current === null || loaded.length > knownCount.current)
+        window.dispatchEvent(new Event(UNREAD_EVENT));
       knownCount.current = loaded.length;
     } catch {
       setLoadError("Messages could not be loaded. Check your connection and try again.");
@@ -94,6 +106,7 @@ export function MessageThread({
         return;
       }
       const message = (await response.json()) as Message;
+      atBottom.current = true;
       setMessages((current) => (current.some((item) => item.id === message.id) ? current : [...current, message]));
       if (knownCount.current !== null) knownCount.current += 1;
       setContent("");
@@ -117,7 +130,15 @@ export function MessageThread({
           {statusLabel("conversation", conversation.status, admin ? "admin" : "client")}
         </span>
       </header>
-      <div className="message-list" aria-live="polite">
+      <div
+        className="message-list"
+        aria-live="polite"
+        ref={listRef}
+        onScroll={(event) => {
+          const list = event.currentTarget;
+          atBottom.current = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+        }}
+      >
         {loading ? (
           <p className="admin-message">Loading conversation...</p>
         ) : loadError ? (
@@ -135,26 +156,35 @@ export function MessageThread({
             </button>
           </div>
         ) : messages.length ? (
-          messages.map((message) => (
-            <article
-              className={`message-bubble ${message.sender_type === "internal" ? "message-internal" : message.sender_id === currentUserId ? "message-own" : "message-other"}`}
-              key={message.id}
-            >
-              <div className="message-label">
-                {message.sender_type === "internal"
-                  ? "Internal note · only the TechJest team sees this"
-                  : message.sender_type === "admin"
-                    ? "TechJest"
-                    : message.sender_id === currentUserId
-                      ? "You"
-                      : "Client"}
-              </div>
-              <p>{message.content}</p>
-              <time dateTime={message.created_at}>
-                {new Date(message.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
-              </time>
-            </article>
-          ))
+          messages.map((message) =>
+            message.message_type === "system" ? (
+              <p className="message-system" key={message.id}>
+                {message.content} ·{" "}
+                <time dateTime={message.created_at}>
+                  {new Date(message.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                </time>
+              </p>
+            ) : (
+              <article
+                className={`message-bubble ${message.sender_type === "internal" ? "message-internal" : message.sender_id === currentUserId ? "message-own" : "message-other"}`}
+                key={message.id}
+              >
+                <div className="message-label">
+                  {message.sender_type === "internal"
+                    ? "Internal note · only the TechJest team sees this"
+                    : message.sender_type === "admin"
+                      ? "TechJest"
+                      : message.sender_id === currentUserId
+                        ? "You"
+                        : "Client"}
+                </div>
+                <p>{message.content}</p>
+                <time dateTime={message.created_at}>
+                  {new Date(message.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                </time>
+              </article>
+            ),
+          )
         ) : (
           <p className="admin-message">No messages yet. Start the conversation below.</p>
         )}

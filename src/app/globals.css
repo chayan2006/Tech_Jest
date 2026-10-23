@@ -1683,6 +1683,26 @@ h2 + .process-grid {
   font-size: 0.9rem;
   line-height: 1.4;
 }
+.profile-summary + .profile-actions,
+.profile-summary + .profile-form {
+  margin: -32px 0 48px;
+}
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+}
+/* Links and buttons share the 44px touch target, so they line up side by side. */
+.profile-actions .text-button {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0;
+}
+.field .text-button {
+  justify-self: start;
+  margin-top: 4px;
+}
 .history-heading {
   display: flex;
   align-items: baseline;
@@ -1812,6 +1832,22 @@ h2 + .process-grid {
 }
 .admin-content {
   min-width: 0;
+}
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+.admin-pagination a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-weight: 700;
 }
 .admin-title {
   display: flex;
@@ -2120,9 +2156,14 @@ h2 + .process-grid {
   font-weight: 700;
   text-align: center;
 }
+/* Each stage scrolls on its own, so a busy stage never pushes the others off the screen. */
 .crm-cards {
   display: grid;
+  align-content: start;
   gap: 10px;
+  max-height: 70vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .crm-card {
   display: grid;
@@ -3249,7 +3290,8 @@ h2 + .process-grid {
     padding: 25px 0 0;
   }
   .admin-layout {
-    grid-template-columns: 1fr;
+    /* minmax(0, …) stops the one-line admin menu from widening the page; the menu scrolls instead. */
+    grid-template-columns: minmax(0, 1fr);
     gap: 28px;
   }
   .admin-sidebar {
@@ -3546,5 +3588,143 @@ h2 + .process-grid {
   }
   .logo-model-shine {
     display: none;
+  }
+}
+
+/* Client workspace: what needs the client's attention, and answering a proposal */
+.attention-panel {
+  margin: -8px 0 32px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--crimson);
+  background: #fff;
+}
+.attention-panel h2 {
+  margin: 0 0 6px;
+  color: var(--crimson);
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.attention-panel ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.attention-panel a,
+.attention-panel span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.attention-panel a {
+  text-decoration: underline;
+  text-decoration-color: var(--crimson);
+  text-underline-offset: 4px;
+}
+.proposal-response {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+.proposal-response-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+/* Automatic notes in a conversation, such as "Proposal accepted" */
+.message-system {
+  justify-self: center;
+  margin: 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--navy-tint);
+  color: var(--navy);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Admin "create" forms that fold away once their list has items */
+.admin-add {
+  margin-top: 18px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+.admin-add > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+.admin-add > summary::-webkit-details-marker {
+  display: none;
+}
+.admin-add[open] > summary {
+  color: var(--muted);
+}
+
+/* Phones and small tablets: the admin console starts with its tabs, not a large intro card.
+   Log out and View website stay in the header menu. */
+@media (max-width: 800px) {
+  .admin-sidebar {
+    padding: 6px 12px;
+  }
+  .admin-sidebar > .eyebrow,
+  .admin-sidebar > h2,
+  .admin-sidebar > p,
+  .admin-sidebar-foot {
+    display: none;
+  }
+  .admin-sidebar .admin-nav {
+    margin: 0 -4px;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-stat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .admin-stat {
+    padding: 14px;
+  }
+  .admin-stat strong {
+    font-size: 1.7rem;
+  }
+  /* Messages and New project request side by side, the same height even when a label wraps. */
+  .dashboard-actions {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+  .dashboard-actions .btn {
+    height: 100%;
+    text-align: center;
+  }
+  .dashboard-actions form {
+    grid-column: 1 / -1;
+  }
+  /* The thread scrolls inside its box, so the reply box stays in reach. */
+  .message-list {
+    max-height: 62vh;
+  }
+  .admin-status-control select {
+    min-height: 40px;
+  }
+  .footer p a {
+    display: inline-block;
+    padding: 6px 0;
+  }
+  .proposal-response-actions .btn {
+    flex: 1 1 140px;
   }
 }

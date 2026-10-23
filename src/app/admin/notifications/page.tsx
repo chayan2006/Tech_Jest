@@ -19,7 +19,7 @@ export default async function AdminNotificationsPage() {
       .select("request_id")
       .eq("type", "service_request")
       .not("request_id", "is", null),
-    unreadByConversation(supabase, user.id, true),
+    unreadByConversation(supabase),
   ]);
   // Safety net: a request whose notification failed to save still shows up here.
   const existingRequestIds = new Set((existing ?? []).map((item) => item.request_id));

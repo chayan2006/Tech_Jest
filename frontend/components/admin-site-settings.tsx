@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { createClient } from "@/backend/supabase/client";
+import { refreshPublicPages } from "@/frontend/components/refresh-public-pages";
 
 type Setting = { key: string; value: string; label: string; description: string };
 
@@ -35,7 +36,13 @@ export function AdminSiteSettings({ settings }: { settings: Setting[] }) {
       })),
       { onConflict: "key" },
     );
-    setMessage(error ? "Could not save settings. Confirm the latest schema is applied." : "Website settings saved.");
+    setMessage(
+      error
+        ? "Could not save settings. Confirm the latest schema is applied."
+        : (await refreshPublicPages())
+          ? "Website settings saved. The live site shows them now."
+          : "Website settings saved. The live site shows them within 5 minutes.",
+    );
     setSaving(false);
   }
 

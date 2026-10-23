@@ -1,11 +1,12 @@
 -- ============================================================================
 -- TechJest: Consolidated Database & Storage Migration Sync
--- Safe to execute against both fresh and existing production Supabase databases.
+-- For EXISTING databases only, after schema.sql has been applied at least once. Safe to run again.
+-- A fresh database needs schema.sql instead: this file depends on its tables (projects, project_requests).
 -- Run in Supabase: Dashboard → SQL Editor → New Query → Paste this file → Run.
+-- Table definitions below must stay identical to schema.sql.
 -- ============================================================================
 
--- 1. EXTENSIONS
-create extension if not exists "uuid-ossp";
+-- 1. EXTENSIONS: none needed; gen_random_uuid() is built into Postgres.
 
 -- 2. SITE SETTINGS TABLE & RLS
 create table if not exists public.site_settings (
@@ -41,7 +42,7 @@ grant insert, update, delete on public.site_settings to authenticated;
 create table if not exists public.audit_logs (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete set null,
-  event text not null,
+  event text not null check (event in ('login', 'admin_login', 'signup')),
   email text,
   ip_address text,
   created_at timestamptz not null default now()
@@ -49,34 +50,41 @@ create table if not exists public.audit_logs (
 
 alter table public.audit_logs enable row level security;
 
+-- Earlier versions of this file added these duplicates of the schema.sql policies; the first let
+-- clients record admin_login events.
 drop policy if exists "Users can insert audit logs" on public.audit_logs;
-create policy "Users can insert audit logs" on public.audit_logs for insert to authenticated
-  with check (auth.uid() = user_id);
-
 drop policy if exists "Admins can view audit logs" on public.audit_logs;
-create policy "Admins can view audit logs" on public.audit_logs for select to authenticated
+drop policy if exists "Users can record their own audit events" on public.audit_logs;
+-- Sign-ins are recorded by the record_auth_event trigger in schema.sql; browsers cannot write here.
+drop policy if exists "Admins can read audit events" on public.audit_logs;
+create policy "Admins can read audit events" on public.audit_logs for select to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
 -- 4. SERVICE CATALOG TABLE & RLS
 create table if not exists public.service_catalog (
-  slug text primary key check (slug ~ '^[a-z0-9-]+$'),
-  name text not null,
-  category text not null,
-  description text not null,
-  price numeric(12, 2),
-  delivery text not null,
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique check (slug ~ '^[a-z0-9]+(?:-[a-z0-9]+)*$'),
+  name text not null check (char_length(name) between 2 and 160),
+  category text not null check (char_length(category) between 2 and 80),
+  description text not null check (char_length(description) between 10 and 1000),
+  price numeric check (price is null or price >= 0),
+  delivery text not null check (char_length(delivery) between 2 and 80),
+  icon text not null default '✦',
   popular boolean not null default false,
-  is_active boolean not null default true,
-  sort_order integer not null default 100,
   included jsonb not null default '[]'::jsonb,
   technologies jsonb not null default '[]'::jsonb,
-  updated_at timestamptz not null default now()
+  is_active boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint service_catalog_included_array check (jsonb_typeof(included) = 'array'),
+  constraint service_catalog_technologies_array check (jsonb_typeof(technologies) = 'array')
 );
 
 alter table public.service_catalog enable row level security;
 
 drop policy if exists "Public can read active services" on public.service_catalog;
-create policy "Public can read active services" on public.service_catalog for select using (is_active = true or (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
+create policy "Public can read active services" on public.service_catalog for select to anon, authenticated using (is_active = true or (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
 drop policy if exists "Admins can manage services" on public.service_catalog;
 create policy "Admins can manage services" on public.service_catalog for all to authenticated
@@ -87,20 +95,22 @@ create policy "Admins can manage services" on public.service_catalog for all to 
 create table if not exists public.project_documents (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects(id) on delete cascade,
-  name text not null,
-  storage_path text not null unique,
+  name text not null check (char_length(name) between 1 and 200),
+  storage_path text not null check (char_length(storage_path) between 1 and 500),
   created_at timestamptz not null default now()
 );
 
 alter table public.project_documents enable row level security;
 
 drop policy if exists "Admins manage project documents" on public.project_documents;
-create policy "Admins manage project documents" on public.project_documents for all to authenticated
+drop policy if exists "Admins can manage project documents" on public.project_documents;
+create policy "Admins can manage project documents" on public.project_documents for all to authenticated
   using ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin')
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 
 drop policy if exists "Clients read their project documents" on public.project_documents;
-create policy "Clients read their project documents" on public.project_documents for select to authenticated
+drop policy if exists "Users can read project documents" on public.project_documents;
+create policy "Users can read project documents" on public.project_documents for select
   using (
     exists (
       select 1 from public.projects

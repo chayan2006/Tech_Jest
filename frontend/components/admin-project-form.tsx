@@ -28,6 +28,10 @@ export function AdminProjectForm({
   const [saving, setSaving] = useState(false);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (startDate && targetDate && targetDate < startDate) {
+      setMessage("The target date must be on or after the start date.");
+      return;
+    }
     setSaving(true);
     const { error } = await createClient()
       .from("projects")

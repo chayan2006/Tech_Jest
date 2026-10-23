@@ -16,9 +16,10 @@ What is still open before TechJest is fully launch-ready. Items marked _owner_ n
 
 ## Features that need an account or approval (owner)
 
-- [ ] Email alerts for new enquiries: an email service account (for example Resend) and the inbox that should receive alerts.
+- [ ] Email alerts for new enquiries (built, October 2026): create a free Resend account, then add `RESEND_API_KEY` and `ALERT_EMAIL_TO` in Vercel → Settings → Environment Variables and redeploy.
 - [ ] Privacy Policy and Terms pages: approve a draft, then have it reviewed (the site collects names, emails, and phone numbers; India's DPDP Act applies).
-- [ ] Decide whether visitors may send an enquiry without creating an account first.
+- [ ] Client emails when the team replies (built, October 2026): verify a domain in Resend, then set `ALERT_EMAIL_FROM` in Vercel to an address on it (for example `alerts@techjest.in`).
+- [x] Visitors may send an enquiry without an account (decided and built, October 2026). Guests get replies by email; signed-in clients get a workspace conversation.
 - [ ] Turn on Vercel Web Analytics if visitor numbers are wanted.
 - [ ] Supabase → Authentication: turn on leaked-password protection (needs the Supabase Pro plan).
 
@@ -26,6 +27,10 @@ What is still open before TechJest is fully launch-ready. Items marked _owner_ n
 
 - [ ] Production deploy includes `vercel.json` (server region `bom1`, next to the database).
 - [ ] Run `backend/supabase/migrations/2026-10-07-live-messages-and-indexes.sql` on the live database (instant message updates, one security fix, three indexes).
+- [x] Run `backend/supabase/migrations/2026-10-22-security-hardening.sql` on the live database (done by the owner, 23 October 2026).
+- [ ] Run `backend/supabase/migrations/2026-10-23-reliability-and-guest-enquiries.sql` on the live database BEFORE deploying the code that goes with it (request submission and unread counts depend on it).
+- [ ] Supabase → Authentication → URL Configuration: Site URL is the live URL and `<live URL>/auth/callback**` is an allowed redirect (needed for password-reset emails).
+- [ ] After deploying, one real password reset on the live site (the email must be opened in the same browser that asked for it).
 - [x] Sign-in, dashboard, messages, and every admin page tested end to end on a local copy of the database (126 checks, October 2026).
 - [ ] After deploying, one real run on the live site: a test request, an admin reply, and a proposal marked Sent.
 - [ ] Spot-check on Safari/iPhone, Firefox, and Edge.

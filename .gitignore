@@ -14,3 +14,5 @@ test-results
 
 # Original team photos dropped in for processing
 /team-photos/
+.next-e2e
+e2e/.env.e2e

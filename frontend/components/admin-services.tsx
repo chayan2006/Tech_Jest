@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { createClient } from "@/backend/supabase/client";
+import { refreshPublicPages } from "@/frontend/components/refresh-public-pages";
 import { serviceCategories, type Service } from "@/frontend/data/services";
 import { ServiceIcon } from "@/frontend/components/icons";
 
@@ -11,6 +12,35 @@ type Draft = Omit<Service, "popular"> & { popular: boolean; is_active: boolean }
 
 function toDraft(service: CatalogService): Draft {
   return { ...service, popular: Boolean(service.popular), is_active: service.is_active ?? true };
+}
+
+// A list edited as text. The text is kept as typed, so a new line or a trailing comma is not
+// removed before the next item is written; only the parsed list goes back to the service.
+function ListField({
+  value,
+  separator,
+  onChange,
+}: {
+  value: string[];
+  separator: "\n" | ",";
+  onChange: (items: string[]) => void;
+}) {
+  const [text, setText] = useState(() => value.join(separator === "," ? ", " : "\n"));
+  return (
+    <textarea
+      rows={3}
+      value={text}
+      onChange={(event) => {
+        setText(event.target.value);
+        onChange(
+          event.target.value
+            .split(separator)
+            .map((item) => item.trim())
+            .filter(Boolean),
+        );
+      }}
+    />
+  );
 }
 
 export function AdminServices({
@@ -46,20 +76,28 @@ export function AdminServices({
     [category, items, query, visibility],
   );
 
-  async function save(service: Draft): Promise<boolean> {
+  // New services are inserted, so a slug that is already taken is refused instead of replacing that service.
+  async function save(service: Draft, isNew = false): Promise<boolean> {
     setSaving(true);
     const supabase = createClient();
-    const { error } = await supabase.from("service_catalog").upsert(
-      {
-        ...service,
-        price: service.price === null || service.price === undefined ? null : Number(service.price),
-        included: service.included,
-        technologies: service.technologies,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "slug" },
+    const row = {
+      ...service,
+      price: service.price === null || service.price === undefined ? null : Number(service.price),
+      included: service.included,
+      technologies: service.technologies,
+      updated_at: new Date().toISOString(),
+    };
+    const { error } = isNew
+      ? await supabase.from("service_catalog").insert({ ...row, sort_order: items.length })
+      : await supabase.from("service_catalog").upsert(row, { onConflict: "slug" });
+    if (!error) await refreshPublicPages();
+    setMessage(
+      error?.code === "23505"
+        ? `The slug “${service.slug}” is already used by another service. Choose a different slug.`
+        : error
+          ? `Could not save service: ${error.message}`
+          : `${service.name} saved to the live catalog.`,
     );
-    setMessage(error ? `Could not save service: ${error.message}` : `${service.name} saved to the live catalog.`);
     setSaving(false);
     return !error;
   }
@@ -77,6 +115,7 @@ export function AdminServices({
       items.map((service, index) => ({ ...service, sort_order: index, updated_at: new Date().toISOString() })),
       { onConflict: "slug" },
     );
+    if (!error) await refreshPublicPages();
     setMessage(
       error
         ? `Could not import the catalog: ${error.message}`
@@ -118,7 +157,11 @@ export function AdminServices({
       setMessage("Name, slug, description, and delivery are required.");
       return;
     }
-    if (await save(service)) {
+    if (items.some((item) => item.slug === service.slug)) {
+      setMessage(`The slug “${service.slug}” is already used by another service. Choose a different slug.`);
+      return;
+    }
+    if (await save(service, true)) {
       setItems((current) => [...current, service]);
       setShowNew(false);
     }
@@ -350,27 +393,18 @@ export function AdminServices({
                 <div className="admin-form-grid">
                   <label>
                     Included deliverables<span className="admin-field-help">One item per line.</span>
-                    <textarea
-                      rows={3}
-                      value={item.included.join("\n")}
-                      onChange={(event) =>
-                        update(item.slug, { included: event.target.value.split("\n").filter(Boolean) })
-                      }
+                    <ListField
+                      value={item.included}
+                      separator={"\n"}
+                      onChange={(included) => update(item.slug, { included })}
                     />
                   </label>
                   <label>
                     Technologies<span className="admin-field-help">Comma separated.</span>
-                    <textarea
-                      rows={3}
-                      value={item.technologies.join(", ")}
-                      onChange={(event) =>
-                        update(item.slug, {
-                          technologies: event.target.value
-                            .split(",")
-                            .map((value) => value.trim())
-                            .filter(Boolean),
-                        })
-                      }
+                    <ListField
+                      value={item.technologies}
+                      separator=","
+                      onChange={(technologies) => update(item.slug, { technologies })}
                     />
                   </label>
                 </div>

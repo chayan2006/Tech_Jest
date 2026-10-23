@@ -1,7 +1,9 @@
 import { createClient } from "@/backend/supabase/server";
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { requestAlertEmail, sendTeamAlert } from "@/backend/email/team-alert";
 import { getServices } from "@/backend/supabase/services";
 import { findServiceArea, notSureService } from "@/frontend/data/service-areas";
+import { getSessionUser } from "@/backend/supabase/session";
 
 type ContactBody = {
   service?: unknown;
@@ -13,21 +15,24 @@ type ContactBody = {
   phone?: unknown;
   company?: unknown;
   timeline?: unknown;
+  // Hidden from people; bots that fill every field fill this one too.
+  website?: unknown;
 };
 
+const emailPattern = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const services = await getServices({ fallbackOnMissingTable: false });
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Please log in before sending a request." }, { status: 401 });
   let body: ContactBody;
   try {
     body = (await request.json()) as ContactBody;
   } catch {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
+  // Looks like success to the bot, so it does not retry; nothing is saved.
+  if (typeof body.website === "string" && body.website.trim()) return NextResponse.json({ ok: true });
+  const supabase = await createClient();
+  const user = await getSessionUser(supabase);
+  const services = await getServices({ fallbackOnMissingTable: false });
   const requestedSlugs = Array.isArray(body.serviceSlugs)
     ? [
         ...new Set(
@@ -85,98 +90,73 @@ export async function POST(request: Request) {
     timeline.length > 160
   )
     return NextResponse.json({ error: "Some request details are too long." }, { status: 400 });
-  if (body.email !== undefined && !email.includes("@"))
+  if ((body.email !== undefined || !user) && !emailPattern.test(email))
     return NextResponse.json({ error: "Enter a valid email address." }, { status: 400 });
+  // Visitors without an account must say who they are, so the team can reply by email.
+  if (!user && name.length < 2) return NextResponse.json({ error: "Enter your name." }, { status: 400 });
+  const failed = (error: { code?: string; message: string }) => {
+    if (error.code === "TJ429")
+      return NextResponse.json(
+        { error: "Several requests were sent from here in the last hour. Please wait a little, or email us instead." },
+        { status: 429 },
+      );
+    // TJ400 messages are written for visitors in the database function.
+    if (error.code === "TJ400") return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error("Could not save project request", { code: error.code, message: error.message });
+    return NextResponse.json({ error: "We could not save your request. Please try again." }, { status: 500 });
+  };
+  const alert = (
+    requestId: string,
+    details: { name?: string | null; email?: string | null; phone?: string | null; company?: string | null },
+  ) =>
+    // After the response, so a slow email service never delays the visitor.
+    after(() =>
+      sendTeamAlert(requestAlertEmail({ requestId, guest: !user, service, message, budget, timeline, ...details })),
+    );
+  if (!user) {
+    const { data: requestId, error } = await supabase.rpc("submit_guest_request", {
+      p_name: name,
+      p_email: email,
+      p_message: message,
+      p_phone: phone || null,
+      p_company: company || null,
+      p_service: service,
+      p_budget: budget || null,
+      p_timeline: timeline || null,
+      p_service_slugs: selectedServices.map((item) => item.slug),
+    });
+    if (error) return failed(error);
+    alert(String(requestId), { name, email, phone, company });
+    return NextResponse.json({ ok: true, guest: true });
+  }
   // The contact form sends no contact details, so the profile fills them in for the admin team.
   const { data: profile } = await supabase
     .from("profiles")
     .select("company_id, full_name, phone, company")
     .eq("id", user.id)
     .maybeSingle();
-  const { data: createdRequest, error } = await supabase
-    .from("project_requests")
-    .insert({
-      user_id: user.id,
-      company_id: profile?.company_id ?? null,
-      service,
-      message,
-      budget: budget || null,
-      name: name || profile?.full_name || null,
-      email: email || user.email || null,
-      phone: phone || profile?.phone || null,
-      company: company || profile?.company || null,
-      budget_range: budget || null,
-      timeline: timeline || null,
-      description: message,
-    })
-    .select("id")
-    .single();
-  if (error) return NextResponse.json({ error: "We could not save your request. Please try again." }, { status: 500 });
-  if (selectedServices.length) {
-    const { error: servicesError } = await supabase.from("project_request_services").insert(
-      selectedServices.map((item) => ({
-        request_id: createdRequest.id,
-        service_slug: item.slug,
-        service_name_snapshot: item.name,
-        price_snapshot: item.price,
-      })),
-    );
-    if (servicesError)
-      return NextResponse.json(
-        { error: "We saved the request but could not save its selected services. Please contact TechJest." },
-        { status: 500 },
-      );
-  }
-  const { data: conversation, error: conversationError } = await supabase
-    .from("conversations")
-    .insert({
-      request_id: createdRequest.id,
-      client_id: user.id,
-      created_by: user.id,
-      title: service.length > 70 ? `${service.slice(0, 67)}...` : service,
-    })
-    .select("id")
-    .single();
-  if (conversationError || !conversation) {
-    return NextResponse.json(
-      { error: "We saved the request but could not open its conversation. Please contact TechJest." },
-      { status: 500 },
-    );
-  }
-  const { error: participantError } = await supabase
-    .from("conversation_participants")
-    .insert({ conversation_id: conversation.id, user_id: user.id, role: "client" });
-  // The messages_touch_conversation trigger marks the conversation as waiting for the team.
-  const { error: messageError } = await supabase.from("messages").insert({
-    conversation_id: conversation.id,
-    sender_id: user.id,
-    sender_type: "client",
-    content: message,
-    message_type: "text",
+  // One database call saves the request, its services, conversation, first message, and admin
+  // notification together, so a failure never leaves part of a request behind.
+  const contact = {
+    name: name || profile?.full_name || null,
+    email: email || user.email || null,
+    phone: phone || profile?.phone || null,
+    company: company || profile?.company || null,
+  };
+  const { data: requestId, error } = await supabase.rpc("submit_project_request", {
+    p_service: service,
+    p_message: message,
+    p_budget: budget || null,
+    p_name: contact.name,
+    p_email: contact.email,
+    p_phone: contact.phone,
+    p_company: contact.company,
+    p_timeline: timeline || null,
+    p_company_id: profile?.company_id ?? null,
+    p_services: selectedServices.map((item) => ({ slug: item.slug, name: item.name, price: item.price })),
+    p_notification_body: `${(name || profile?.full_name || email || user.email || "A client").slice(0, 100)} requested ${service}.`,
   });
-  if (participantError || messageError) {
-    console.error("Could not finish request conversation setup", { participantError, messageError });
-    return NextResponse.json(
-      { error: "We saved the request but could not finish its conversation setup. Please contact TechJest." },
-      { status: 500 },
-    );
-  }
-  const { error: notificationError } = await supabase.from("admin_notifications").insert({
-    type: "service_request",
-    title: "New service request",
-    body: `${(name || profile?.full_name || email || user.email || "A client").slice(0, 100)} requested ${service}.`.slice(
-      0,
-      500,
-    ),
-    request_id: createdRequest.id,
-    conversation_id: conversation?.id ?? null,
-  });
-  if (notificationError) {
-    console.error("Could not create request notification", notificationError);
-    return NextResponse.json(
-      { error: "We saved the request but could not notify the admin team. Please contact TechJest." },
-      { status: 500 },
-    );
-  }
+  if (error) return failed(error);
+  alert(String(requestId), contact);
   return NextResponse.json({ ok: true });
 }

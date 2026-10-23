@@ -6,3 +6,4 @@ public
 *.md
 *.sql
 .claude
+.next-e2e

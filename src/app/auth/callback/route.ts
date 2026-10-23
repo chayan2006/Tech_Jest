@@ -23,6 +23,8 @@ export async function GET(request: Request) {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
+    // The signup trigger normally creates the profile; this only fills the gap if it did not.
+    // Existing profiles are left alone, so a Google sign-in never wipes saved details.
     const metadata = user.user_metadata ?? {};
     const fullName = String(
       metadata.full_name ?? metadata.name ?? user.email?.split("@")[0] ?? "TechJest client",
@@ -38,7 +40,7 @@ export async function GET(request: Request) {
             ? metadata.purpose.trim().slice(0, 500)
             : "Project consultation",
       },
-      { onConflict: "id" },
+      { onConflict: "id", ignoreDuplicates: true },
     );
     if (profileError) {
       console.error("Auth profile provisioning failed", {

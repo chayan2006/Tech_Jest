@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { createClient } from "@/backend/supabase/server";
+import { createPublicClient } from "@/backend/supabase/public";
 
 // Digits only, 10–15 long, and not a run like 919999999999 left over from a placeholder.
 // wa.me needs the country code, so a 10-digit Indian mobile (optionally with a leading 0) gets 91.
@@ -27,13 +27,12 @@ export const defaultSiteSettings = {
 
 type SiteSettings = typeof defaultSiteSettings;
 
-// Cached per request: the layout and pages share one read.
+// Cached per request: the layout and pages share one read. The read uses no cookies, so pages stay
+// cacheable; saving in Admin → Website settings refreshes them (see /api/admin/revalidate).
 export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   const settings: SiteSettings = { ...defaultSiteSettings };
-  // No try/catch: cookies() must be allowed to signal dynamic rendering to Next.js,
-  // and Supabase reports query failures through `error` rather than throwing.
-  const supabase = await createClient();
-  const { data, error } = await supabase.from("site_settings").select("key, value");
+  // Supabase reports query failures through `error` rather than throwing.
+  const { data, error } = await createPublicClient().from("site_settings").select("key, value");
   // A missing table (before the migration runs) silently falls back to the defaults.
   if (error && error.code !== "PGRST205" && error.code !== "42P01")
     console.error("Could not load site settings", { code: error.code, message: error.message });

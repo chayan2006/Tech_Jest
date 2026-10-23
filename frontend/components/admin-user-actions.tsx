@@ -10,15 +10,19 @@ export function AdminUserActions({ userId, name }: { userId: string; name: strin
     if (!window.confirm(`Remove ${name}'s profile, requests, conversations, and notifications? This cannot be undone.`))
       return;
     setBusy(true);
-    const response = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
-    if (!response.ok) {
-      const result = await response.json().catch(() => null);
-      window.alert(result?.error || "Could not remove this user's data.");
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, { method: "DELETE" });
+      if (!response.ok) {
+        const result = await response.json().catch(() => null);
+        window.alert(result?.error || "Could not remove this user's data.");
+        return;
+      }
+      router.refresh();
+    } catch {
+      window.alert("Could not reach the server. Check your connection and try again.");
+    } finally {
       setBusy(false);
-      return;
     }
-    router.refresh();
-    setBusy(false);
   }
   return (
     <button type="button" className="request-delete" onClick={removeUser} disabled={busy}>

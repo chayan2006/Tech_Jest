@@ -1,4 +1,4 @@
-import { createClient } from "@/backend/supabase/server";
+import { createPublicClient } from "@/backend/supabase/public";
 import { services as fallbackServices } from "@/frontend/data/services";
 import type { Service } from "@/frontend/data/services";
 
@@ -19,8 +19,8 @@ function fromRow(row: Record<string, unknown>): Service {
 export async function getServices(options: { fallbackOnMissingTable?: boolean } = {}): Promise<Service[]> {
   const fallbackOnMissingTable = options.fallbackOnMissingTable ?? true;
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+    // No cookies: the public catalog keeps the services pages cacheable.
+    const { data, error } = await createPublicClient()
       .from("service_catalog")
       .select("slug, name, category, description, price, delivery, popular, included, technologies")
       .eq("is_active", true)

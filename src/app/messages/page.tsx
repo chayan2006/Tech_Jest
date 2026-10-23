@@ -1,15 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/backend/supabase/server";
 import { MessageThread } from "@/frontend/components/message-thread";
 import { statusLabel } from "@/frontend/data/workflow";
 import { formatDate } from "@/lib/format";
+import { getSessionUser } from "@/backend/supabase/session";
+
+// A private client page, so keep it out of search results.
+export const metadata: Metadata = {
+  title: "Messages",
+  robots: { index: false, follow: false },
+};
 
 export default async function MessagesPage({ searchParams }: { searchParams: Promise<{ conversation?: string }> }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser(supabase);
   if (!user) redirect("/auth?next=/messages");
   if (user.app_metadata?.role === "admin") redirect("/admin/messages");
   const { data: conversations } = await supabase

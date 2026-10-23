@@ -46,7 +46,9 @@ export async function proxy(request: NextRequest) {
       },
     },
   });
-  await supabase.auth.getUser();
+  // Verifies the token locally (ES256 key) and refreshes the session cookie when it is about to expire,
+  // without a round trip to Supabase Auth on every page view.
+  await supabase.auth.getClaims();
   return response;
 }
 

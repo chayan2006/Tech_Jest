@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { notSureService, serviceAreas } from "@/frontend/data/service-areas";
+import { findServiceArea, notSureService, serviceAreas } from "@/frontend/data/service-areas";
+import { useAccount } from "@/frontend/components/account";
 
 const DRAFT_KEY = "techjest-contact-draft";
 const loginHref = "/auth?next=/contact";
 
-type Draft = { service?: unknown; budget?: unknown; message?: unknown };
+type Draft = {
+  service?: unknown;
+  budget?: unknown;
+  message?: unknown;
+  name?: unknown;
+  email?: unknown;
+  phone?: unknown;
+};
 
 function readDraft(): Draft {
   try {
@@ -19,25 +27,38 @@ function readDraft(): Draft {
   }
 }
 
-export function ContactForm({ signedIn, initialService }: { signedIn: boolean; initialService: string }) {
-  const [service, setService] = useState(initialService);
+// Signed-in clients send requests into their workspace; visitors without an account send a guest
+// enquiry with their name and email, and the team replies by email.
+export function ContactForm() {
+  const { account, ready } = useAccount();
+  const signedIn = Boolean(account);
+  const [service, setService] = useState("");
   const [budget, setBudget] = useState("");
   const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [website, setWebsite] = useState("");
+  const [sent, setSent] = useState<"workspace" | "guest" | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  // Restore what the visitor typed before they were sent to log in.
+  // Start from ?service= (links from the service pages), or what the visitor typed before logging in.
   useEffect(() => {
+    const fromLink = findServiceArea(new URLSearchParams(window.location.search).get("service") ?? undefined)?.title;
     const draft = readDraft();
-    if (typeof draft.service === "string" && !initialService) setService(draft.service);
+    if (fromLink) setService(fromLink);
+    else if (typeof draft.service === "string") setService(draft.service);
     if (typeof draft.budget === "string") setBudget(draft.budget);
     if (typeof draft.message === "string") setMessage(draft.message);
-  }, [initialService]);
+    if (typeof draft.name === "string") setName(draft.name);
+    if (typeof draft.email === "string") setEmail(draft.email);
+    if (typeof draft.phone === "string") setPhone(draft.phone);
+  }, []);
 
   function keepDraftAndLogIn() {
     try {
-      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ service, budget, message }));
+      window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ service, budget, message, name, email, phone }));
     } catch {
       // Storage can be unavailable (private mode); logging in still works.
     }
@@ -47,21 +68,15 @@ export function ContactForm({ signedIn, initialService }: { signedIn: boolean; i
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    if (!signedIn) {
-      keepDraftAndLogIn();
-      return;
-    }
     setBusy(true);
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ service, budget, message }),
+        body: JSON.stringify(
+          signedIn ? { service, budget, message } : { service, budget, message, name, email, phone, website },
+        ),
       });
-      if (response.status === 401) {
-        keepDraftAndLogIn();
-        return;
-      }
       if (!response.ok) {
         const result = (await response.json().catch(() => null)) as { error?: string } | null;
         setError(result?.error ?? "We could not save your request.");
@@ -72,7 +87,7 @@ export function ContactForm({ signedIn, initialService }: { signedIn: boolean; i
       } catch {
         // Nothing to clean up when storage is unavailable.
       }
-      setSent(true);
+      setSent(signedIn ? "workspace" : "guest");
     } catch {
       setError("We could not connect to TechJest. Please try again.");
     } finally {
@@ -80,6 +95,13 @@ export function ContactForm({ signedIn, initialService }: { signedIn: boolean; i
     }
   }
 
+  if (sent === "guest")
+    return (
+      <div className="band" style={{ padding: 30 }}>
+        <h2>Request sent.</h2>
+        <p>Thank you. We’ll reply to {email} within one business day.</p>
+      </div>
+    );
   if (sent)
     return (
       <div className="band" style={{ padding: 30 }}>
@@ -93,21 +115,70 @@ export function ContactForm({ signedIn, initialService }: { signedIn: boolean; i
 
   return (
     <form className="form" onSubmit={submit}>
-      {!signedIn && (
-        <p className="form-note">
-          Sending a request needs a free TechJest account, so your request and our replies stay in your private
-          workspace. We’ll keep what you type here while you{" "}
-          <a
-            href={loginHref}
-            onClick={(event) => {
-              event.preventDefault();
-              keepDraftAndLogIn();
-            }}
-          >
-            log in or sign up
-          </a>
-          .
-        </p>
+      {ready && !signedIn && (
+        <>
+          <p className="form-note">
+            No account needed: we’ll reply by email. To keep our replies in a private workspace instead,{" "}
+            <a
+              href={loginHref}
+              onClick={(event) => {
+                event.preventDefault();
+                keepDraftAndLogIn();
+              }}
+            >
+              log in or sign up
+            </a>{" "}
+            first. We’ll keep what you’ve typed.
+          </p>
+          <div className="field">
+            <label htmlFor="contact-name">Your name</label>
+            <input
+              id="contact-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
+              minLength={2}
+              maxLength={100}
+              autoComplete="name"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="contact-email">Email</label>
+            <input
+              id="contact-email"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+              maxLength={320}
+              autoComplete="email"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="contact-phone">
+              Phone <small>(optional)</small>
+            </label>
+            <input
+              id="contact-phone"
+              type="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              maxLength={30}
+              autoComplete="tel"
+            />
+          </div>
+          {/* Hidden from people and screen readers; only bots fill it in. */}
+          <div className="visually-hidden" aria-hidden="true">
+            <label htmlFor="contact-website">Website</label>
+            <input
+              id="contact-website"
+              tabIndex={-1}
+              autoComplete="off"
+              value={website}
+              onChange={(event) => setWebsite(event.target.value)}
+            />
+          </div>
+        </>
       )}
       <div className="field">
         <label htmlFor="service">What can we help with?</label>
@@ -160,8 +231,8 @@ export function ContactForm({ signedIn, initialService }: { signedIn: boolean; i
           {error}
         </p>
       )}
-      <button className="btn btn-primary" type="submit" disabled={busy}>
-        {busy ? "Saving request…" : signedIn ? "Save project request" : "Log in to send request"}
+      <button className="btn btn-primary" type="submit" disabled={busy || !ready}>
+        {busy ? "Sending request…" : signedIn ? "Save project request" : "Send request"}
       </button>
     </form>
   );

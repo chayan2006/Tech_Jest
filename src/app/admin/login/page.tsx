@@ -29,9 +29,7 @@ export default function AdminLoginPage() {
       return;
     }
 
-    await supabase
-      .from("audit_logs")
-      .insert({ user_id: result.data.user.id, event: "admin_login", email: result.data.user.email });
+    // The database records the admin sign-in in the activity log (record_auth_event).
     window.location.assign("/admin");
   }
 

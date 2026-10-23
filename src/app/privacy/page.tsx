@@ -24,8 +24,8 @@ export default async function Privacy() {
           <h2>Information we collect</h2>
           <p>
             When you send a project enquiry, request a quote, or message us, we collect the details you enter: your
-            name, email, phone number, company, budget, timeline, and project description. If you create an account, we
-            also store your sign-in details and the project history linked to it.
+            name, email, phone number, company, budget, timeline, and project description. You do not need an account to
+            send an enquiry. If you create one, we also store your sign-in details and the project history linked to it.
           </p>
           <h2>How we use it</h2>
           <p>
@@ -35,13 +35,13 @@ export default async function Privacy() {
           <h2>Who can see it</h2>
           <p>
             Your enquiries and project data are visible to the TechJest team. We use trusted providers to host the
-            website and store data, and they process it only to provide those services. We share information with others
-            only where the law requires it.
+            website, store data, and send email notifications about your enquiry and our replies, and they process it
+            only to provide those services. We share information with others only where the law requires it.
           </p>
           <h2>Cookies</h2>
           <p>
-            We use only the cookies and browser storage needed to keep you signed in and to remember the services in
-            your project cart.
+            We use only the cookies and browser storage needed to keep you signed in, to remember the services in your
+            project cart, and to keep a half-written enquiry while you log in.
           </p>
           <h2>Your choices</h2>
           <p>

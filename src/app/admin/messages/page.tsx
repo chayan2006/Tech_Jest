@@ -14,7 +14,7 @@ export default async function AdminMessagesPage() {
       .select("id, title, status, client_id, last_message_at")
       .neq("status", "archived")
       .order("last_message_at", { ascending: false, nullsFirst: false }),
-    unreadByConversation(supabase, user.id, true),
+    unreadByConversation(supabase),
   ]);
   const profiles = await profilesById(supabase, conversations?.map((item) => item.client_id) ?? []);
   return (

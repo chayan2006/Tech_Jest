@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { requireAdmin } from "@/backend/supabase/admin";
 import { profilesById } from "@/backend/supabase/profiles";
 import { AdminShell } from "@/frontend/components/admin-shell";
@@ -8,6 +9,8 @@ import { AdminRequestActions } from "@/frontend/components/admin-request-actions
 import { AdminProjectForm } from "@/frontend/components/admin-project-form";
 import { statusLabel } from "@/frontend/data/workflow";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/format";
+import { isUuid } from "@/lib/uuid";
+import { AdminAddSection } from "@/frontend/components/admin-add-section";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,6 +18,7 @@ export const revalidate = 0;
 export default async function AdminRequestDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, user } = await requireAdmin();
+  if (!isUuid(id)) notFound();
   const { data: request, error } = await supabase
     .from("project_requests")
     .select(
@@ -92,7 +96,11 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
           <div className="admin-panel-head">
             <div>
               <h2>Client</h2>
-              <p>Contact details from the request and the client’s profile.</p>
+              <p>
+                {request.user_id
+                  ? "Contact details from the request and the client’s profile."
+                  : "Guest enquiry: this person has no account, so there is no conversation or client workspace. Reply by email."}
+              </p>
             </div>
             <span className={`admin-status status-${request.status}`}>{statusLabel("request", request.status)}</span>
           </div>
@@ -191,13 +199,19 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
             ))}
           </div>
         ) : null}
-        <AdminProposalForm requestId={request.id} defaultTitle={request.service} />
+        <AdminAddSection label="+ New proposal" open={!proposals?.length}>
+          <AdminProposalForm requestId={request.id} defaultTitle={request.service} />
+        </AdminAddSection>
       </section>
       <section className="admin-panel admin-detail-services">
         <div className="admin-panel-head">
           <div>
             <h2>Project</h2>
-            <p>Create the delivery workspace this client sees in their dashboard.</p>
+            <p>
+              {request.user_id
+                ? "Create the delivery workspace this client sees in their dashboard."
+                : "A guest has no dashboard, so they will not see projects, proposals, or invoices created here."}
+            </p>
           </div>
         </div>
         {projects?.length ? (
@@ -212,7 +226,9 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
             ))}
           </div>
         ) : null}
-        <AdminProjectForm requestId={request.id} proposalId={projectProposal?.id} defaultName={request.service} />
+        <AdminAddSection label="+ New project" open={!projects?.length}>
+          <AdminProjectForm requestId={request.id} proposalId={projectProposal?.id} defaultName={request.service} />
+        </AdminAddSection>
       </section>
     </AdminShell>
   );

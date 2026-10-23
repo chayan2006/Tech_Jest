@@ -1,18 +1,20 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/site-url";
 import { getServices } from "@/backend/supabase/services";
-import { createClient } from "@/backend/supabase/server";
+import { createPublicClient } from "@/backend/supabase/public";
 import { serviceAreas } from "@/frontend/data/service-areas";
 
-// Reads the live catalog per request, like the /services pages.
-export const dynamic = "force-dynamic";
+// Rebuilt with the /services pages: every 5 minutes, or straight after an admin edit.
+export const revalidate = 300;
 
 // Real edit dates from the catalog, so lastmod only changes when a service does.
 async function getServiceDates(): Promise<Map<string, Date>> {
   const dates = new Map<string, Date>();
   try {
-    const supabase = await createClient();
-    const { data, error } = await supabase.from("service_catalog").select("slug, updated_at").eq("is_active", true);
+    const { data, error } = await createPublicClient()
+      .from("service_catalog")
+      .select("slug, updated_at")
+      .eq("is_active", true);
     if (error) return dates;
     for (const row of data ?? []) {
       const date = new Date(String(row.updated_at));
