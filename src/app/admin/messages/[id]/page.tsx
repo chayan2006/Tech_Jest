@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/backend/supabase/admin";
 import { profilesById } from "@/backend/supabase/profiles";
+import { AdminDeleteButton } from "@/frontend/components/admin-delete-button";
 import { AdminShell } from "@/frontend/components/admin-shell";
 import { AdminStatusSelect } from "@/frontend/components/admin-status-select";
 import { MessageThread } from "@/frontend/components/message-thread";
@@ -52,6 +53,13 @@ export default async function AdminMessageDetail({ params }: { params: Promise<{
           id={conversation.id}
           value={conversation.status}
           label="Conversation status"
+        />
+        <AdminDeleteButton
+          kind="conversation"
+          id={conversation.id}
+          name={conversation.title}
+          label="Delete conversation"
+          redirectTo="/admin/messages"
         />
       </div>
       <MessageThread conversation={conversation} currentUserId={user.id} admin />

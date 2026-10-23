@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { requireAdmin } from "@/backend/supabase/admin";
 import { profilesById } from "@/backend/supabase/profiles";
 import { unreadByConversation } from "@/backend/supabase/unread";
+import { AdminConversationInbox } from "@/frontend/components/admin-conversation-inbox";
 import { AdminShell } from "@/frontend/components/admin-shell";
 import { statusLabel } from "@/frontend/data/workflow";
 import { formatDateTime } from "@/lib/format";
@@ -24,7 +24,8 @@ export default async function AdminMessagesPage() {
           <div className="eyebrow">Communication</div>
           <h1>Messages.</h1>
           <p className="lead">
-            Reply to clients, set each conversation’s status, and keep project communication in one place.
+            Reply to clients, set each conversation’s status, and delete old conversations, one at a time or several
+            together, to keep the inbox clean.
           </p>
         </div>
       </div>
@@ -36,32 +37,20 @@ export default async function AdminMessagesPage() {
           </div>
         </div>
         {conversations?.length ? (
-          <div className="conversation-inbox">
-            {conversations.map((item) => {
+          <AdminConversationInbox
+            conversations={conversations.map((item) => {
               const client = item.client_id ? profiles.get(item.client_id) : undefined;
-              const newCount = unread.get(item.id) ?? 0;
-              return (
-                <Link className="conversation-inbox-row" href={`/admin/messages/${item.id}`} key={item.id}>
-                  <div>
-                    <strong>
-                      {item.title}
-                      {newCount > 0 && <span className="notification-unread-dot">{newCount} new</span>}
-                    </strong>
-                    <small>
-                      {client?.full_name ?? "Client"}
-                      {client?.company ? ` · ${client.company}` : ""}
-                    </small>
-                  </div>
-                  <div>
-                    <span className={`admin-status status-${item.status}`}>
-                      {statusLabel("conversation", item.status)}
-                    </span>
-                    <small>{item.last_message_at ? formatDateTime(item.last_message_at) : "No messages"}</small>
-                  </div>
-                </Link>
-              );
+              return {
+                id: item.id,
+                title: item.title,
+                client: `${client?.full_name ?? "Client"}${client?.company ? ` · ${client.company}` : ""}`,
+                status: item.status,
+                statusLabel: statusLabel("conversation", item.status),
+                lastMessage: item.last_message_at ? formatDateTime(item.last_message_at) : "No messages",
+                newCount: unread.get(item.id) ?? 0,
+              };
             })}
-          </div>
+          />
         ) : (
           <div className="empty-state">
             <h2>No conversations yet.</h2>

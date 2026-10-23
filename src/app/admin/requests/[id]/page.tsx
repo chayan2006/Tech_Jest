@@ -4,6 +4,7 @@ import { requireAdmin } from "@/backend/supabase/admin";
 import { profilesById } from "@/backend/supabase/profiles";
 import { AdminShell } from "@/frontend/components/admin-shell";
 import { AdminStatusSelect } from "@/frontend/components/admin-status-select";
+import { EmailLink, PhoneLinks } from "@/frontend/components/contact-links";
 import { AdminProposalForm } from "@/frontend/components/admin-proposal-form";
 import { AdminRequestActions } from "@/frontend/components/admin-request-actions";
 import { AdminProjectForm } from "@/frontend/components/admin-project-form";
@@ -68,6 +69,7 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
   ]);
   const profile = profiles.get(request.user_id);
   const clientName = request.name ?? profile?.full_name;
+  const phone = request.phone ?? profile?.phone;
   // A new project links to the accepted proposal, or else the latest one.
   const projectProposal = proposals?.find((proposal) => proposal.status === "accepted") ?? proposals?.[0];
   return (
@@ -111,11 +113,17 @@ export default async function AdminRequestDetail({ params }: { params: Promise<{
             </div>
             <div>
               <dt>Email</dt>
-              <dd>{request.email ? <a href={`mailto:${request.email}`}>{request.email}</a> : "Not provided"}</dd>
+              <dd>
+                {request.email ? (
+                  <EmailLink email={request.email} subject={`Your TechJest enquiry: ${request.service}`} />
+                ) : (
+                  "Not provided"
+                )}
+              </dd>
             </div>
             <div>
               <dt>Phone</dt>
-              <dd>{request.phone ?? profile?.phone ?? "Not provided"}</dd>
+              <dd>{phone ? <PhoneLinks phone={phone} /> : "Not provided"}</dd>
             </div>
             <div>
               <dt>Company</dt>

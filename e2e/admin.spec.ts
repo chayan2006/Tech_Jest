@@ -104,6 +104,134 @@ test("a guest enquiry tells the team there is no account", async ({ page }) => {
   await expect(page.getByText("Guest enquiry: this person has no account")).toBeVisible();
 });
 
+test("an admin can delete an old conversation and its messages", async ({ page }) => {
+  const client = await createUser({ prefix: "old-chat-client" });
+  const { data: conversation } = await admin
+    .from("conversations")
+    .insert({ client_id: client.id, created_by: client.id, title: "Old chat to remove" })
+    .select("id")
+    .single();
+  await admin
+    .from("messages")
+    .insert({ conversation_id: conversation!.id, sender_id: client.id, sender_type: "client", content: "Hello" });
+
+  const team = await createUser({ prefix: "admin-delete-chat", role: "admin" });
+  await logInAsAdmin(page, team.email, team.password);
+  await page.goto(`/admin/messages/${conversation!.id}`);
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete Old chat to remove" }).click();
+  await expect(page).toHaveURL(/\/admin\/messages$/);
+  await expect(page.getByText("Old chat to remove")).toHaveCount(0);
+
+  const { count } = await admin
+    .from("messages")
+    .select("id", { count: "exact", head: true })
+    .eq("conversation_id", conversation!.id);
+  expect(count).toBe(0);
+});
+
+test("an admin can tick several conversations and delete them together", async ({ page }) => {
+  const client = await createUser({ prefix: "bulk-chat-client" });
+  // Unique titles, so a rerun on the same test database never matches an earlier run's rows.
+  const run = Date.now();
+  const { data: conversations } = await admin
+    .from("conversations")
+    .insert(
+      ["one", "two", "kept"].map((name) => ({
+        client_id: client.id,
+        created_by: client.id,
+        title: `Bulk chat ${name} ${run}`,
+      })),
+    )
+    .select("id, title");
+
+  const team = await createUser({ prefix: "admin-bulk-chat", role: "admin" });
+  await logInAsAdmin(page, team.email, team.password);
+  await page.goto("/admin/messages");
+  await page.getByLabel(`Select Bulk chat one ${run}`).check();
+  await page.getByLabel(`Select Bulk chat two ${run}`).check();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete selected (2)" }).click();
+  await expect(page.getByText(`Bulk chat one ${run}`)).toHaveCount(0);
+  await expect(page.getByText(`Bulk chat two ${run}`)).toHaveCount(0);
+  await expect(page.getByText(`Bulk chat kept ${run}`)).toBeVisible();
+
+  const { data: left } = await admin
+    .from("conversations")
+    .select("title")
+    .in(
+      "id",
+      conversations!.map((item) => item.id),
+    );
+  expect(left?.map((item) => item.title)).toEqual([`Bulk chat kept ${run}`]);
+});
+
+test("admins search and filter requests, and reach a guest by email or WhatsApp", async ({ page }) => {
+  const run = Date.now();
+  const guest = browserlessClient();
+  const send = async (name: string, phone: string | null) => {
+    const { data, error } = await guest.rpc("submit_guest_request", {
+      p_name: name,
+      p_email: uniqueEmail("search-guest"),
+      p_phone: phone,
+      p_message: "Please build us a booking website for our clinic.",
+      p_service: "Web Development",
+    });
+    if (error) throw error;
+    return data as string;
+  };
+  const meera = await send(`Meera ${run}`, "98765 43210");
+  await send(`Arjun ${run}`, null);
+  await admin.from("project_requests").update({ status: "completed" }).eq("id", meera);
+
+  const team = await createUser({ prefix: "admin-search", role: "admin" });
+  await logInAsAdmin(page, team.email, team.password);
+  await page.goto("/admin/requests");
+  await page.getByLabel("Search requests").fill(`Meera ${run}`);
+  await page.getByRole("button", { name: "Search" }).click();
+  await expect(page).toHaveURL(/q=Meera/);
+  await expect(page.locator(".admin-count")).toHaveText("1 matching");
+  await expect(page.getByText(`Arjun ${run}`)).toHaveCount(0);
+
+  const request = page.locator(".admin-request");
+  await expect(request.getByRole("link", { name: /search-guest/ })).toHaveAttribute(
+    "href",
+    /^mailto:.+\?subject=Your%20TechJest%20enquiry/,
+  );
+  await expect(request.getByRole("link", { name: "WhatsApp" })).toHaveAttribute("href", "https://wa.me/919876543210");
+  await expect(request.getByRole("link", { name: "98765 43210" })).toHaveAttribute("href", "tel:9876543210");
+
+  await page.goto(`/admin/requests?q=${run}&status=completed`);
+  await expect(page.locator(".admin-count")).toHaveText("1 matching");
+  await page.goto(`/admin/requests?q=${run}&status=declined`);
+  await expect(page.getByText("No requests match.")).toBeVisible();
+  // A search with filter syntax in it is treated as plain text.
+  const response = await page.goto(`/admin/requests?q=${encodeURIComponent('x",id.neq.0')}`);
+  expect(response?.status()).toBe(200);
+  await expect(page.getByText("No requests match.")).toBeVisible();
+});
+
+test("the inbox search hides other conversations from Select all", async ({ page }) => {
+  const client = await createUser({ prefix: "inbox-search-client" });
+  const run = Date.now();
+  await admin.from("conversations").insert(
+    ["Bakery app", "Gym website"].map((name) => ({
+      client_id: client.id,
+      created_by: client.id,
+      title: `${name} ${run}`,
+    })),
+  );
+  const team = await createUser({ prefix: "admin-inbox-search", role: "admin" });
+  await logInAsAdmin(page, team.email, team.password);
+  await page.goto("/admin/messages");
+  await page.getByLabel("Search conversations").fill(`Bakery app ${run}`);
+  await expect(page.getByText(`Gym website ${run}`)).toHaveCount(0);
+  await page.getByLabel("Select all").check();
+  await expect(page.getByRole("button", { name: "Delete selected (1)" })).toBeVisible();
+  await page.getByLabel("Search conversations").fill(`nothing like this ${run}`);
+  await expect(page.getByText("No conversations match this search.")).toBeVisible();
+});
+
 test("website settings show on the cached homepage straight away", async ({ page }) => {
   const team = await createUser({ prefix: "admin-settings", role: "admin" });
   await logInAsAdmin(page, team.email, team.password);

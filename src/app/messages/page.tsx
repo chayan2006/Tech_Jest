@@ -6,6 +6,7 @@ import { MessageThread } from "@/frontend/components/message-thread";
 import { statusLabel } from "@/frontend/data/workflow";
 import { formatDate } from "@/lib/format";
 import { getSessionUser } from "@/backend/supabase/session";
+import { unreadByConversation } from "@/backend/supabase/unread";
 
 // A private client page, so keep it out of search results.
 export const metadata: Metadata = {
@@ -18,12 +19,15 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
   const user = await getSessionUser(supabase);
   if (!user) redirect("/auth?next=/messages");
   if (user.app_metadata?.role === "admin") redirect("/admin/messages");
-  const { data: conversations } = await supabase
-    .from("conversations")
-    .select("id, title, status, priority, last_message_at")
-    .eq("client_id", user.id)
-    .neq("status", "archived")
-    .order("last_message_at", { ascending: false, nullsFirst: false });
+  const [{ data: conversations }, unread] = await Promise.all([
+    supabase
+      .from("conversations")
+      .select("id, title, status, priority, last_message_at")
+      .eq("client_id", user.id)
+      .neq("status", "archived")
+      .order("last_message_at", { ascending: false, nullsFirst: false }),
+    unreadByConversation(supabase),
+  ]);
   const { conversation: selectedId } = await searchParams;
   const first = conversations?.find((item) => item.id === selectedId) ?? conversations?.[0];
   return (
@@ -46,19 +50,26 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
               <span>{conversations?.length ?? 0}</span>
             </div>
             {conversations?.length ? (
-              conversations.map((item) => (
-                <Link
-                  className={`conversation-list-item ${item.id === first?.id ? "active" : ""}`}
-                  href={`/messages?conversation=${item.id}`}
-                  key={item.id}
-                >
-                  <strong>{item.title}</strong>
-                  <small>
-                    {statusLabel("conversation", item.status, "client")} ·{" "}
-                    {item.last_message_at ? formatDate(item.last_message_at) : "New"}
-                  </small>
-                </Link>
-              ))
+              conversations.map((item) => {
+                // The open conversation is marked read as it loads, so it never shows a badge.
+                const newCount = item.id === first?.id ? 0 : (unread.get(item.id) ?? 0);
+                return (
+                  <Link
+                    className={`conversation-list-item ${item.id === first?.id ? "active" : ""}`}
+                    href={`/messages?conversation=${item.id}`}
+                    key={item.id}
+                  >
+                    <strong>
+                      {item.title}
+                      {newCount > 0 && <span className="notification-unread-dot">{newCount} new</span>}
+                    </strong>
+                    <small>
+                      {statusLabel("conversation", item.status, "client")} ·{" "}
+                      {item.last_message_at ? formatDate(item.last_message_at) : "New"}
+                    </small>
+                  </Link>
+                );
+              })
             ) : (
               <p className="admin-message">Your conversations will appear here after you submit a project request.</p>
             )}

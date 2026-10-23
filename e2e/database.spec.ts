@@ -217,10 +217,13 @@ test("guest enquiries are checked, limited, and kept private", async () => {
 
 test("guest enquiries stop at 50 an hour across the site", async () => {
   const marker = `cap-${Date.now()}`;
+  // Count the last hour only, as the limit does. 55 minutes leaves room for clock drift between
+  // the test runner and the database: counting a few too few just adds a little more filler.
   const { count } = await admin
     .from("project_requests")
     .select("*", { count: "exact", head: true })
-    .is("user_id", null);
+    .is("user_id", null)
+    .gt("created_at", new Date(Date.now() - 55 * 60_000).toISOString());
   const filler = Array.from({ length: Math.max(0, 50 - count!) }, (_, index) => ({
     user_id: null,
     service: marker,

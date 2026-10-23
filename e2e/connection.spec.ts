@@ -158,3 +158,52 @@ test("on a phone the admin console starts with its tabs, and the current tab is 
   await page.getByText("+ New proposal").click();
   await expect(page.getByRole("button", { name: "Save proposal" })).toBeVisible();
 });
+
+test("clients see which conversation has new replies, and messages show the day", async ({ page }) => {
+  const user = await createUser({ prefix: "badges", name: "Neha Gupta" });
+  const team = await createUser({ prefix: "badges-admin", role: "admin" });
+  const client = await signedInClient(user.email, user.password);
+  const conversationFor = async (service: string) => {
+    const { data: requestId, error } = await client.rpc("submit_project_request", {
+      p_service: service,
+      p_message: "We need help with this part of the business, please.",
+      p_email: user.email,
+    });
+    if (error) throw error;
+    const { data } = await admin.from("conversations").select("id").eq("request_id", requestId).single();
+    return data!.id as string;
+  };
+  const replied = await conversationFor("Inventory app");
+  const latest = await conversationFor("Company website");
+  // A team reply in one conversation, then the client's own message in the other, so the second
+  // conversation is newest and opens first, leaving the reply waiting in the list.
+  await admin.from("messages").insert({
+    conversation_id: replied,
+    sender_id: team.id,
+    sender_type: "admin",
+    content: "We have a first plan for the inventory app.",
+    message_type: "text",
+  });
+  await admin.from("messages").insert({
+    conversation_id: latest,
+    sender_id: user.id,
+    sender_type: "client",
+    content: "Any update on the website?",
+    message_type: "text",
+  });
+
+  await logIn(page, user.email, user.password);
+  await page.goto("/messages");
+  await expect(page.locator(`a[href="/messages?conversation=${replied}"]`)).toContainText("1 new");
+  await expect(page.locator(`a[href="/messages?conversation=${latest}"]`)).not.toContainText("new");
+  await expect(page.locator(".message-day").first()).toHaveText("Today");
+
+  // Ctrl + Enter sends, and the "Sent" note clears by itself.
+  const box = page.getByLabel("Message", { exact: true });
+  await box.fill("Sent with the keyboard shortcut.");
+  await box.press("Control+Enter");
+  await expect(page.locator(".message-bubble").getByText("Sent with the keyboard shortcut.")).toBeVisible();
+  await expect(box).toHaveValue("");
+  await expect(page.getByRole("status")).toHaveText("Sent");
+  await expect(page.getByRole("status")).toBeHidden({ timeout: 6000 });
+});

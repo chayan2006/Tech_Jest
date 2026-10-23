@@ -2068,6 +2068,11 @@ h2 + .process-grid {
   line-height: 1.5;
 }
 .conversation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
   margin: -14px 0 18px;
 }
 .admin-unread-panel {
@@ -2581,6 +2586,9 @@ h2 + .process-grid {
 .admin-customer span {
   color: var(--muted);
 }
+.admin-customer .contact-links {
+  color: inherit;
+}
 .request-actions {
   display: grid;
   gap: 14px;
@@ -2756,16 +2764,100 @@ h2 + .process-grid {
   align-items: center;
   gap: 12px;
 }
+.message-composer-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+}
+.message-shortcut {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+/* "Today", "Yesterday" or a date, centred on a thin line above each day's messages. */
+.message-day {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.message-day::before,
+.message-day::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid var(--line);
+}
 .conversation-inbox {
   display: grid;
 }
+.admin-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.admin-filter input,
+.admin-filter select {
+  border: 1px solid var(--field);
+  border-radius: 2px;
+  background: #fff;
+  padding: 10px 12px;
+  color: var(--ink);
+  font-size: 0.84rem;
+}
+.admin-filter input {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.admin-filter :is(input, select):focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 1px;
+  border-color: var(--navy);
+}
+/* Stays under the site header while scrolling, so ticked rows far down the list can still be deleted. */
+.conversation-bulk-bar {
+  position: sticky;
+  top: 84px;
+  z-index: 2;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 1px solid var(--line);
+}
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: #912018;
+}
+.conversation-select {
+  flex: none;
+  width: auto;
+}
+.conversation-inbox-item {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+}
 .conversation-inbox-row {
   display: flex;
+  flex: 1;
+  min-width: 0;
   justify-content: space-between;
   gap: 18px;
   align-items: center;
   padding: 17px 0;
-  border-bottom: 1px solid var(--line);
   color: inherit;
 }
 .conversation-inbox-row > div {
@@ -3201,6 +3293,9 @@ h2 + .process-grid {
   .nav {
     height: 72px;
   }
+  .conversation-bulk-bar {
+    top: 76px;
+  }
   .brand-image {
     width: 100px;
   }
@@ -3485,8 +3580,9 @@ h2 + .process-grid {
   .admin-nav::-webkit-scrollbar {
     display: none;
   }
+  /* clip, not hidden: hidden would make this a scroll box and stop sticky bars inside it. */
   .admin-content {
-    overflow: hidden;
+    overflow: clip;
   }
   .admin-table-wrap {
     margin-inline: -18px;

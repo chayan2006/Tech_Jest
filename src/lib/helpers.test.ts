@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { isUuid } from "./uuid";
 import { jsonLd } from "./json-ld";
-import { pageFromParam, pageRange } from "./pagination";
+import { pageFromParam, pageRange, searchFromParam } from "./pagination";
 import { requestAlertEmail } from "@/backend/email/team-alert";
 
 describe("isUuid", () => {
@@ -36,6 +36,15 @@ describe("admin pagination", () => {
     expect(pageFromParam("-4")).toBe(1);
     expect(pageFromParam("2.5")).toBe(1);
     expect(pageFromParam("abc")).toBe(1);
+  });
+
+  it("cleans ?q= so it cannot break out of the quoted search filter", () => {
+    expect(searchFromParam(undefined)).toBe("");
+    expect(searchFromParam("  priya@gmail.com ")).toBe("priya@gmail.com");
+    expect(searchFromParam(["clinic", "other"])).toBe("clinic");
+    expect(searchFromParam('a",id.neq.x')).toBe("a,id.neq.x");
+    expect(searchFromParam("100%*\\")).toBe("100");
+    expect(searchFromParam("x".repeat(150))).toHaveLength(100);
   });
 
   it("turns a page into a row range", () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/backend/supabase/client";
@@ -16,6 +16,20 @@ type Message = {
   message_type: string;
   created_at: string;
 };
+
+// "Today", "Yesterday", or "23 Oct 2026", in the reader's own time zone, for the line above each day's messages.
+function dayLabel(value: string) {
+  const day = new Date(value).toDateString();
+  const today = new Date();
+  if (day === today.toDateString()) return "Today";
+  today.setDate(today.getDate() - 1);
+  if (day === today.toDateString()) return "Yesterday";
+  return new Date(value).toLocaleDateString("en-IN", { dateStyle: "medium" });
+}
+
+function timeOfDay(value: string) {
+  return new Date(value).toLocaleTimeString("en-IN", { timeStyle: "short" });
+}
 
 export function MessageThread({
   conversation,
@@ -39,6 +53,13 @@ export function MessageThread({
   const listRef = useRef<HTMLDivElement>(null);
   // Whether the reader is at the newest message; if they scrolled up to read, new arrivals leave them there.
   const atBottom = useRef(true);
+
+  // Success notes fade after a few seconds; errors stay until the next attempt.
+  useEffect(() => {
+    if (status !== "Sent" && status !== "Internal note saved") return;
+    const timer = window.setTimeout(() => setStatus(""), 3000);
+    return () => window.clearTimeout(timer);
+  }, [status]);
 
   useEffect(() => {
     const list = listRef.current;
@@ -156,35 +177,41 @@ export function MessageThread({
             </button>
           </div>
         ) : messages.length ? (
-          messages.map((message) =>
-            message.message_type === "system" ? (
-              <p className="message-system" key={message.id}>
-                {message.content} ·{" "}
-                <time dateTime={message.created_at}>
-                  {new Date(message.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
-                </time>
-              </p>
-            ) : (
-              <article
-                className={`message-bubble ${message.sender_type === "internal" ? "message-internal" : message.sender_id === currentUserId ? "message-own" : "message-other"}`}
-                key={message.id}
-              >
-                <div className="message-label">
-                  {message.sender_type === "internal"
-                    ? "Internal note · only the TechJest team sees this"
-                    : message.sender_type === "admin"
-                      ? "TechJest"
-                      : message.sender_id === currentUserId
-                        ? "You"
-                        : "Client"}
-                </div>
-                <p>{message.content}</p>
-                <time dateTime={message.created_at}>
-                  {new Date(message.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
-                </time>
-              </article>
-            ),
-          )
+          messages.map((message, index) => {
+            const day = dayLabel(message.created_at);
+            const previous = messages[index - 1];
+            const newDay = !previous || day !== dayLabel(previous.created_at);
+            return (
+              <Fragment key={message.id}>
+                {newDay && (
+                  <p className="message-day">
+                    <span>{day}</span>
+                  </p>
+                )}
+                {message.message_type === "system" ? (
+                  <p className="message-system">
+                    {message.content} · <time dateTime={message.created_at}>{timeOfDay(message.created_at)}</time>
+                  </p>
+                ) : (
+                  <article
+                    className={`message-bubble ${message.sender_type === "internal" ? "message-internal" : message.sender_id === currentUserId ? "message-own" : "message-other"}`}
+                  >
+                    <div className="message-label">
+                      {message.sender_type === "internal"
+                        ? "Internal note · only the TechJest team sees this"
+                        : message.sender_type === "admin"
+                          ? "TechJest"
+                          : message.sender_id === currentUserId
+                            ? "You"
+                            : "Client"}
+                    </div>
+                    <p>{message.content}</p>
+                    <time dateTime={message.created_at}>{timeOfDay(message.created_at)}</time>
+                  </article>
+                )}
+              </Fragment>
+            );
+          })
         ) : (
           <p className="admin-message">No messages yet. Start the conversation below.</p>
         )}
@@ -198,19 +225,29 @@ export function MessageThread({
           rows={3}
           maxLength={5000}
           disabled={sending}
+          onKeyDown={(event) => {
+            // Ctrl + Enter (⌘ + Enter on a Mac) sends; plain Enter still starts a new line.
+            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+              event.preventDefault();
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
         />
         <div className="message-composer-actions">
-          {admin && (
-            <label className="admin-checkbox">
-              <input
-                type="checkbox"
-                checked={internal}
-                onChange={(event) => setInternal(event.target.checked)}
-                disabled={sending}
-              />{" "}
-              Internal note
-            </label>
-          )}
+          <div className="message-composer-options">
+            {admin && (
+              <label className="admin-checkbox">
+                <input
+                  type="checkbox"
+                  checked={internal}
+                  onChange={(event) => setInternal(event.target.checked)}
+                  disabled={sending}
+                />{" "}
+                Internal note
+              </label>
+            )}
+            <small className="message-shortcut">Ctrl + Enter to send</small>
+          </div>
           <button type="submit" className="btn btn-primary" disabled={!content.trim() || sending}>
             {sending ? "Sending..." : "Send message"}
           </button>

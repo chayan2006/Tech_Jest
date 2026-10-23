@@ -11,3 +11,13 @@ export function pageRange(page: number, pageSize = adminPageSize): [number, numb
   const from = (page - 1) * pageSize;
   return [from, from + pageSize - 1];
 }
+
+// "?q=..." → a search term that is safe inside a quoted PostgREST filter value: trimmed, at most
+// 100 characters, without quotes, backslashes, or the % and * wildcards. Empty means no search.
+export function searchFromParam(value: string | string[] | undefined): string {
+  const text = Array.isArray(value) ? value[0] : value;
+  return (text ?? "")
+    .replace(/["\\%*]/g, "")
+    .trim()
+    .slice(0, 100);
+}
