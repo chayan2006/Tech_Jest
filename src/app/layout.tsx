@@ -248,6 +248,15 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
                     )}
                     <br />
                     <a
+                      href="https://www.linkedin.com/company/techjest"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="TechJest on LinkedIn"
+                    >
+                      LinkedIn
+                    </a>
+                    <br />
+                    <a
                       href="https://instagram.com/techjest_"
                       target="_blank"
                       rel="noopener noreferrer"

@@ -13,6 +13,8 @@ export async function GET() {
 ## Company
 
 - Website: ${siteUrl}
+- LinkedIn: https://www.linkedin.com/company/techjest
+- Instagram: https://www.instagram.com/techjest_
 - Source repository: https://github.com/chayan2006/Tech_Jest
 - Contact: ${contactEmail}
 - Service area: India and worldwide
