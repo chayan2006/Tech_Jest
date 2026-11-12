@@ -5,6 +5,8 @@
   --navy-raised: #24285c;
   --navy-tint: #e9eaf2;
   --navy-wash: #f4f4f8;
+  --surface: #ffffff;
+  --brand: #1b1e4a;
   --stone: #afaea2;
   --stone-light: #c9c8be;
   --stone-pale: #efeee8;
@@ -34,9 +36,9 @@
   --ease-curtain: cubic-bezier(0.76, 0, 0.24, 1);
   --shadow: 0 1px 2px rgba(27, 30, 74, 0.06), 0 14px 32px -16px rgba(27, 30, 74, 0.25);
   --shadow-lg: 0 2px 4px rgba(27, 30, 74, 0.05), 0 28px 60px -24px rgba(27, 30, 74, 0.35);
-  /* The site is light only, so native controls stay light even when the OS is in dark mode. */
+  /* Light is the default. Dark mode is switched on with html[data-theme="dark"] (see the end of this file). */
   color-scheme: light;
-  accent-color: var(--navy);
+  accent-color: var(--brand);
 }
 * {
   box-sizing: border-box;
@@ -408,7 +410,7 @@ p {
   padding: 16px 20px 20px;
   display: grid;
   gap: 14px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   border: 1px solid var(--line);
   border-top: 3px solid var(--crimson);
@@ -470,23 +472,23 @@ p {
   background: var(--crimson-deep);
 }
 .btn-ghost {
-  background: #fff;
+  background: var(--surface);
   border-color: var(--line-strong);
   color: var(--ink);
 }
 .btn-ghost:hover {
-  border-color: var(--navy);
+  border-color: var(--brand);
 }
 .btn-google {
   width: 100%;
   margin-top: 28px;
-  background: #fff;
+  background: var(--surface);
   border-color: var(--line-strong);
   color: var(--ink);
   gap: 10px;
 }
 .btn-google:hover {
-  border-color: var(--navy);
+  border-color: var(--brand);
 }
 .btn-google span {
   display: grid;
@@ -886,7 +888,7 @@ html[data-intro="exit"] .site-welcome {
   border-bottom: 1px solid var(--line);
 }
 .hero h1 {
-  color: var(--navy);
+  color: var(--brand);
 }
 .hero .lead {
   color: var(--muted);
@@ -1039,14 +1041,14 @@ html[data-intro="exit"] .site-welcome {
   align-items: center;
   height: 0.58em;
   padding: 0 0.1em 0 0.06em;
-  background: #fff;
+  background: var(--surface);
 }
 .hero-pill-faces > span {
   position: relative;
   width: 0.46em;
   height: 0.46em;
   overflow: hidden;
-  border: 3px solid #fff;
+  border: 3px solid var(--surface);
   border-radius: 50%;
   background: var(--navy-tint);
 }
@@ -1421,7 +1423,7 @@ html.depth-on .service-card.is-tilting::before {
 
 .project-blueprint {
   min-width: 0;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-top: 3px solid var(--crimson);
   border-radius: var(--radius);
@@ -1533,7 +1535,7 @@ html.depth-on .service-card.is-tilting::before {
   align-items: flex-start;
   min-height: 240px;
   padding: 34px 30px 30px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   counter-increment: service;
   transition: box-shadow 0.3s var(--ease);
@@ -1602,7 +1604,7 @@ html.depth-on .service-card.is-tilting::before {
   grid-template-columns: repeat(4, 1fr);
 }
 .process-step {
-  background: #fff;
+  background: var(--surface);
   padding: 30px 28px;
   min-height: 190px;
   border: 1px solid var(--line);
@@ -1683,14 +1685,14 @@ h2 + .process-grid {
   border-radius: 50%;
   object-fit: cover;
   box-shadow:
-    0 0 0 3px #fff,
+    0 0 0 3px var(--surface),
     0 0 0 4px var(--line);
 }
 .leader-initials {
   display: grid;
   place-items: center;
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
   font-family: var(--serif);
   font-size: 1.6rem;
   font-weight: 600;
@@ -1723,7 +1725,7 @@ h2 + .process-grid {
   justify-content: space-between;
   min-height: 260px;
   padding: 26px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
   transition:
@@ -1782,7 +1784,7 @@ h2 + .process-grid {
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 .project-featured .project-image {
@@ -1922,7 +1924,7 @@ h2 + .process-grid {
   align-items: center;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 .work-spotlight-image {
@@ -2120,7 +2122,7 @@ h2 + .process-grid {
 }
 .page-hero h1,
 .marketplace-hero h1 {
-  color: var(--navy);
+  color: var(--brand);
   font-size: clamp(2.6rem, 5.4vw, 4.4rem);
   max-width: 820px;
 }
@@ -2129,7 +2131,7 @@ h2 + .process-grid {
   color: var(--muted);
 }
 .page-hero .eyebrow a {
-  color: var(--navy);
+  color: var(--brand);
   text-decoration: underline;
   text-decoration-color: var(--crimson);
   text-underline-offset: 4px;
@@ -2144,13 +2146,13 @@ h2 + .process-grid {
   width: min(680px, 100%);
   margin-top: 34px;
   padding: 4px 18px;
-  background: #fff;
+  background: var(--surface);
   border-radius: var(--radius-small);
   border: 1px solid var(--line-strong);
   box-shadow: var(--shadow);
 }
 .marketplace-search:focus-within {
-  outline: 2px solid var(--navy);
+  outline: 2px solid var(--brand);
   outline-offset: 3px;
 }
 .marketplace-search span {
@@ -2173,13 +2175,13 @@ h2 + .process-grid {
   font-size: 0.92rem;
 }
 .page-hero .service-detail-price strong {
-  color: var(--navy);
+  color: var(--brand);
 }
 .detail-tech-eyebrow {
   margin-top: 38px;
 }
 .related-services {
-  background: #fff;
+  background: var(--surface);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -2265,7 +2267,7 @@ h2 + .process-grid {
 .field textarea {
   width: 100%;
   border: 1px solid var(--field);
-  background: #fff;
+  background: var(--surface);
   padding: 13px 14px;
   border-radius: var(--radius-small);
   color: var(--ink);
@@ -2273,9 +2275,9 @@ h2 + .process-grid {
 }
 :is(.field, .admin-form) :is(input, select, textarea):focus-visible,
 .message-composer textarea:focus-visible {
-  outline: 2px solid var(--navy);
+  outline: 2px solid var(--brand);
   outline-offset: 1px;
-  border-color: var(--navy);
+  border-color: var(--brand);
 }
 .field textarea {
   min-height: 150px;
@@ -2306,7 +2308,7 @@ h2 + .process-grid {
   margin: 0;
   padding: 14px 16px;
   border-left: 3px solid var(--crimson);
-  background: #fff;
+  background: var(--surface);
   color: var(--text);
   font-size: 0.8rem;
 }
@@ -2317,7 +2319,7 @@ h2 + .process-grid {
 .auth-shell {
   max-width: 580px;
   padding: 44px;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line);
   border-top: 3px solid var(--crimson);
   box-shadow: var(--shadow-lg);
@@ -2405,7 +2407,7 @@ h2 + .process-grid {
   display: grid;
   gap: 8px;
   padding: 18px;
-  background: #fff;
+  background: var(--surface);
 }
 .profile-summary span,
 .history-heading span {
@@ -2459,7 +2461,7 @@ h2 + .process-grid {
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .history-item p {
   color: var(--muted);
@@ -2485,7 +2487,7 @@ h2 + .process-grid {
   border: 1px solid var(--line);
   box-shadow: 0 3px 12px rgba(27, 30, 74, 0.03);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 
 /* Admin console */
@@ -2509,9 +2511,9 @@ h2 + .process-grid {
   overflow-y: auto;
   scrollbar-width: thin;
   border: 1px solid var(--line);
-  border-top: 3px solid var(--navy);
+  border-top: 3px solid var(--brand);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .admin-sidebar h2 {
   font-size: 1.5rem;
@@ -2620,7 +2622,7 @@ h2 + .process-grid {
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   transition:
     transform 0.2s var(--ease),
     box-shadow 0.2s var(--ease);
@@ -2652,7 +2654,7 @@ h2 + .process-grid {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   color: inherit;
   transition:
     transform 0.2s var(--ease),
@@ -2681,7 +2683,7 @@ h2 + .process-grid {
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .admin-panel-head {
   display: flex;
@@ -2753,7 +2755,7 @@ h2 + .process-grid {
 .status-qualified,
 .status-negotiation {
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
 }
 .status-completed,
 .status-accepted,
@@ -2831,7 +2833,7 @@ h2 + .process-grid {
   gap: 5px;
   margin: 14px 0;
   padding: 14px 16px;
-  border-left: 3px solid var(--navy);
+  border-left: 3px solid var(--brand);
   background: var(--navy-wash);
 }
 .dashboard-proposal .eyebrow {
@@ -2919,7 +2921,7 @@ h2 + .process-grid {
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   transition:
     transform 0.2s var(--ease),
@@ -2950,7 +2952,7 @@ h2 + .process-grid {
   padding: 8px 12px;
   border-radius: 999px;
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -3014,7 +3016,7 @@ h2 + .process-grid {
   border: 1px solid var(--field);
   border-radius: var(--radius-small);
   padding: 10px 12px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
 }
@@ -3083,7 +3085,7 @@ h2 + .process-grid {
   border: 1px solid var(--field);
   border-radius: var(--radius-small);
   padding: 9px 11px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
   font-size: 0.78rem;
@@ -3096,10 +3098,10 @@ h2 + .process-grid {
   padding: 0 10px;
   border: 1px solid var(--field);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .service-search:focus-within {
-  outline: 2px solid var(--navy);
+  outline: 2px solid var(--brand);
   outline-offset: 1px;
 }
 .service-search span {
@@ -3131,7 +3133,7 @@ h2 + .process-grid {
   padding: 20px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .admin-service-row.is-archived {
   opacity: 0.62;
@@ -3162,7 +3164,7 @@ h2 + .process-grid {
   height: 38px;
   border-radius: var(--radius-small);
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
   font-size: 1.2rem;
 }
 .service-row-labels {
@@ -3283,7 +3285,7 @@ h2 + .process-grid {
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .admin-request-top {
   display: flex;
@@ -3345,7 +3347,7 @@ h2 + .process-grid {
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-small);
   padding: 9px 12px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font-size: 0.74rem;
   font-weight: 600;
@@ -3353,9 +3355,9 @@ h2 + .process-grid {
 }
 .request-action:hover,
 .request-action.selected {
-  border-color: var(--navy);
+  border-color: var(--brand);
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
 }
 .request-action-warning:hover,
 .request-action-warning.selected {
@@ -3390,7 +3392,7 @@ h2 + .process-grid {
 .message-thread {
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   overflow: hidden;
 }
 .conversation-list-head,
@@ -3459,7 +3461,7 @@ h2 + .process-grid {
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #fff;
+  background: var(--surface);
 }
 .message-bubble.message-own {
   justify-self: end;
@@ -3498,7 +3500,7 @@ h2 + .process-grid {
   border: 1px solid var(--field);
   border-radius: var(--radius-small);
   padding: 11px;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
 }
@@ -3554,7 +3556,7 @@ h2 + .process-grid {
 .admin-filter select {
   border: 1px solid var(--field);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   padding: 10px 12px;
   color: var(--ink);
   font-size: 0.84rem;
@@ -3564,16 +3566,16 @@ h2 + .process-grid {
   min-width: 0;
 }
 .admin-filter :is(input, select):focus-visible {
-  outline: 2px solid var(--navy);
+  outline: 2px solid var(--brand);
   outline-offset: 1px;
-  border-color: var(--navy);
+  border-color: var(--brand);
 }
 /* Stays under the site header while scrolling, so ticked rows far down the list can still be deleted. */
 .conversation-bulk-bar {
   position: sticky;
   top: 84px;
   z-index: 2;
-  background: #fff;
+  background: var(--surface);
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -3659,7 +3661,7 @@ h2 + .process-grid {
   flex: 0 0 auto;
   border-radius: var(--radius-small);
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
 }
 .notification-item-body {
   flex: 1;
@@ -3716,7 +3718,7 @@ h2 + .process-grid {
   border: 1px solid var(--field);
   padding: 10px 12px;
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
 }
 .category-list {
@@ -3729,7 +3731,7 @@ h2 + .process-grid {
   border: 1px solid var(--line-strong);
   border-radius: 999px;
   padding: 9px 14px;
-  background: #fff;
+  background: var(--surface);
   color: var(--muted);
   font-size: 0.75rem;
   font-weight: 700;
@@ -3740,7 +3742,7 @@ h2 + .process-grid {
     color 0.2s;
 }
 .category-list button:hover {
-  border-color: var(--navy);
+  border-color: var(--brand);
   color: var(--ink);
 }
 .category-list button.active {
@@ -3760,7 +3762,7 @@ h2 + .process-grid {
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   transition:
     transform 0.25s var(--ease),
     box-shadow 0.25s var(--ease),
@@ -3779,7 +3781,7 @@ h2 + .process-grid {
   margin-bottom: 16px;
   border-radius: var(--radius-small);
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
   font-size: 1.35rem;
 }
 .market-service-icon svg,
@@ -3836,7 +3838,7 @@ h2 + .process-grid {
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .popular-panel h2,
 .cart-summary h2 {
@@ -3969,7 +3971,7 @@ h2 + .process-grid {
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
 }
 .cart-item .market-service-icon {
   margin: 0;
@@ -3997,7 +3999,7 @@ h2 + .process-grid {
   border: 1px solid var(--line);
   border-top: 3px solid var(--crimson);
   border-radius: var(--radius-small);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 .quote-form .btn {
@@ -4487,7 +4489,7 @@ h2 + .process-grid {
   padding: 16px 20px;
   border: 1px solid var(--line);
   border-left: 3px solid var(--crimson);
-  background: #fff;
+  background: var(--surface);
 }
 .attention-panel h2 {
   margin: 0 0 6px;
@@ -4535,7 +4537,7 @@ h2 + .process-grid {
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--navy-tint);
-  color: var(--navy);
+  color: var(--brand);
   font-size: 0.76rem;
   font-weight: 700;
   text-align: center;
@@ -4696,7 +4698,7 @@ h2 + .process-grid {
   padding: 6px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   width: fit-content;
 }
 .workspace-nav a {
@@ -4720,7 +4722,7 @@ h2 + .process-grid {
   padding: clamp(22px, 4vw, 40px);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
   box-shadow: var(--shadow);
 }
 .contact-form-panel > h2 {
@@ -4796,7 +4798,7 @@ h2 + .process-grid {
 .skeleton-card {
   height: 180px;
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--surface);
   border-radius: var(--radius);
 }
 .catalog-notice {
@@ -4804,7 +4806,7 @@ h2 + .process-grid {
   padding: 24px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: #fff;
+  background: var(--surface);
 }
 .catalog-notice h2 {
   font-size: 1.5rem;
@@ -4880,7 +4882,7 @@ h2 + .process-grid {
     padding: 10px;
     border: 1px solid var(--line);
     border-radius: var(--radius-small);
-    background: #fff;
+    background: var(--surface);
     color: var(--ink);
     font-size: 1rem;
   }
@@ -5017,4 +5019,107 @@ h2 + .process-grid {
 .admin-request-top > div {
   flex: 1;
   min-width: 0;
+}
+
+/* Theme toggle (sun / moon button in the header) */
+.theme-toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--dark-line);
+  border-radius: 2px;
+  color: #fff;
+  cursor: pointer;
+  transition:
+    background-color 0.2s var(--ease),
+    border-color 0.2s var(--ease);
+}
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(175, 174, 162, 0.45);
+}
+.theme-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+.theme-toggle .icon-sun {
+  display: none;
+}
+html[data-theme="dark"] .theme-toggle .icon-moon {
+  display: none;
+}
+html[data-theme="dark"] .theme-toggle .icon-sun {
+  display: block;
+}
+
+/* Dark theme.
+   Page white -> deep blue, cards -> a slightly lighter blue, and the old navy bands
+   (header, hero, process band, page mastheads, footer) -> a greyish blue so they still stand out. */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1b1e4a;
+  --surface: #2c3150;
+  --navy: #2e3468;
+  --navy-deep: #262b5e;
+  --navy-raised: #394080;
+  --navy-line: #565d9a;
+  --navy-tint: #2d3370;
+  --navy-wash: #272c4d;
+  --stone-pale: #262b4b;
+  --brand: #d6d9f8;
+  --ink: #ffffff;
+  --text: #d5d8f0;
+  --muted: #a9aed1;
+  --line: #343a73;
+  --line-strong: #454c8a;
+  --field: #7d84b8;
+  --crimson-wash: rgba(210, 19, 25, 0.22);
+  --success: #5fd0a0;
+  --success-wash: rgba(95, 208, 160, 0.14);
+  --warning: #f0c35a;
+  --warning-wash: rgba(240, 195, 90, 0.14);
+  --danger: #ff8f87;
+  --danger-wash: rgba(255, 143, 135, 0.14);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 32px -16px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 2px 4px rgba(0, 0, 0, 0.3), 0 28px 60px -24px rgba(0, 0, 0, 0.7);
+}
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #8a90c0;
+}
+html[data-theme="dark"] .pill-success {
+  color: var(--success);
+}
+html[data-theme="dark"] .pill-muted {
+  background: var(--navy-tint);
+}
+html[data-theme="dark"] .message-bubble.message-own {
+  border-color: var(--line-strong);
+}
+html[data-theme="dark"] .message-bubble.message-internal {
+  background: rgba(240, 195, 90, 0.12);
+  border-color: rgba(240, 195, 90, 0.4);
+}
+html[data-theme="dark"] .success-panel {
+  background: rgba(95, 208, 160, 0.1);
+  border-color: rgba(95, 208, 160, 0.4);
+}
+html[data-theme="dark"] .btn-added {
+  border-color: rgba(95, 208, 160, 0.45);
+}
+html[data-theme="dark"] .request-action-warning:hover,
+html[data-theme="dark"] .request-action-warning.selected {
+  border-color: rgba(255, 143, 135, 0.5);
+}
+html[data-theme="dark"] .btn-danger,
+html[data-theme="dark"] .admin-bulk-delete {
+  background: #b42318;
+}
+html[data-theme="dark"] .btn-danger:hover,
+html[data-theme="dark"] .admin-bulk-delete:hover {
+  background: #912018;
 }
