@@ -1,22 +1,24 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Manrope, Source_Serif_4 } from "next/font/google";
+import "./fonts.css";
 import "./globals.css";
+import "./site-assistant.css";
 import { MobileMenu } from "@/frontend/components/mobile-menu";
+import { SiteAssistant } from "@/frontend/components/site-assistant";
 import { NavLinks } from "@/frontend/components/nav-links";
-import { SiteIntro, introScript } from "@/frontend/components/site-intro";
+import { SiteIntro } from "@/frontend/components/site-intro";
+import { Depth3D } from "@/frontend/components/depth-3d";
+import { introScript } from "@/lib/site-intro";
+import { ThemeToggle } from "@/frontend/components/theme-toggle";
+import { themeScript } from "@/frontend/components/theme-script";
 import { ChatIcon } from "@/frontend/components/icons";
 import { team, type TeamMember } from "@/frontend/data/team";
 import { AccountBadge, AccountProvider, NotificationBell } from "@/frontend/components/account";
-import { CartLink } from "@/frontend/components/service-cart";
+import { CartLink, CartToast } from "@/frontend/components/service-cart";
 import { getSiteUrl } from "@/lib/site-url";
 import { getSiteSettings, whatsappLink } from "@/backend/supabase/site-settings";
 import { jsonLd } from "@/lib/json-ld";
-
-const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
-// Headings only use the 600 weight, so one static file keeps the download small.
-const serif = Source_Serif_4({ subsets: ["latin"], weight: "600", variable: "--font-serif" });
 
 const siteUrl = getSiteUrl();
 const founders = team.filter((member) => member.founder);
@@ -167,15 +169,26 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   };
   // The intro script sets data-intro on <html> before hydration, hence suppressHydrationWarning.
   return (
-    <html lang="en" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link
+          rel="preload"
+          href="/fonts/source-serif-4-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(organizationSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema) }} />
         <SiteIntro />
+        <Depth3D />
         <AccountProvider>
+          <CartToast />
           <a className="skip" href="#main">
             Skip to content
           </a>
@@ -197,6 +210,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <div className="nav-actions">
                 <NotificationBell />
                 <CartLink />
+                <ThemeToggle />
                 <Link className="btn btn-primary" href="/contact">
                   Book a consultation
                 </Link>
@@ -204,7 +218,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               </div>
             </div>
           </header>
-          <main id="main">{children}</main>
+          <main id="main" tabIndex={-1}>
+            {children}
+          </main>
           <footer className="footer">
             <div className="container">
               <div className="footer-grid">
@@ -288,6 +304,8 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               </a>
             </aside>
           )}
+          {/* The website assistant (/api/chat) is off until AI_API_KEY is configured. */}
+          {process.env.AI_API_KEY?.trim() && <SiteAssistant raised={Boolean(whatsappChatHref)} />}
         </AccountProvider>
       </body>
     </html>
