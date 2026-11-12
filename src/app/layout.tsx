@@ -10,6 +10,8 @@ import { NavLinks } from "@/frontend/components/nav-links";
 import { SiteIntro } from "@/frontend/components/site-intro";
 import { Depth3D } from "@/frontend/components/depth-3d";
 import { introScript } from "@/lib/site-intro";
+import { ThemeToggle } from "@/frontend/components/theme-toggle";
+import { themeScript } from "@/frontend/components/theme-script";
 import { ChatIcon } from "@/frontend/components/icons";
 import { team, type TeamMember } from "@/frontend/data/team";
 import { AccountBadge, AccountProvider, NotificationBell } from "@/frontend/components/account";
@@ -177,6 +179,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
       <body>
@@ -207,6 +210,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
               <div className="nav-actions">
                 <NotificationBell />
                 <CartLink />
+                <ThemeToggle />
                 <Link className="btn btn-primary" href="/contact">
                   Book a consultation
                 </Link>
